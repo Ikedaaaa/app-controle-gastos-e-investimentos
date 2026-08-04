@@ -188,7 +188,8 @@ No app, a carteira existe uma única vez e os movimentos são registrados
 cronologicamente.
 
 ### Requisitos
-- Uma carteira tem: nome, objetivo/descrição, tipo (acúmulo ou investimento)
+- Uma carteira tem: nome, objetivo/descrição, tipo (acúmulo ou investimento),
+  prazo (data-alvo, opcional) e quantia desejada (valor-alvo, opcional)
 - Cada carteira contém aportes individuais com:
   - Valor aplicado
   - Data de aplicação
@@ -218,6 +219,26 @@ cronologicamente.
 - Caixinha dedicada a fatura de cartão
 - Caixinha de acúmulo de dividendos (valor total rendendo, sem controle
   granular por empresa ou evento — apenas acúmulo para reinvestimento futuro)
+
+### Campos de meta da carteira: prazo e quantia desejada
+"Juntar para consumo" não é um filtro adicional — é o próprio tipo de
+carteira já listado acima (Acúmulo/Caixinha). O que de fato vale documentar
+são dois campos legítimos de uma Carteira com objetivo, usados para definir
+a meta desde a criação:
+
+- **Prazo** (data-alvo) — quando o objetivo deve ser alcançado
+- **Quantia desejada** (valor-alvo) — quanto se pretende juntar/investir
+
+Esses campos permitem exibir progresso na própria tela da carteira (ex:
+"R$6.500 de R$10.000, faltam 720 dias").
+
+Filtrar carteiras por faixas desses valores (ex: "prazo menor que 2 anos")
+tem valor questionável, principalmente com poucas carteiras — é complexidade
+de UI sem ganho real de uso. Mais útil seria **ordenar** a lista de carteiras
+por proximidade do prazo ou distância até a meta, para ajudar a priorizar
+onde alocar dinheiro num período — diferente de filtro (inclusão/exclusão
+binária), ordenação agrega valor mesmo com poucos itens. Sem decisão fechada
+sobre implementar a ordenação agora; registrado para o design de telas.
 
 ### Rendimento: informado manualmente, não calculado pelo app
 O app não recalcula rendimentos de renda fixa — o banco calcula, o usuário
@@ -561,6 +582,26 @@ Identificados como necessários para superar a limitação do bloco de notas:
 
 ---
 
+## Considerações de arquitetura para suporte futuro a múltiplos usuários
+
+Registrado das anotações brutas originais: mesmo sendo um app de uso pessoal
+exclusivo, vale desenhar o banco de dados pensando em não fechar a porta para
+múltiplos usuários no futuro, caso o projeto evolua nessa direção.
+
+- **Faixas de ID para distinguir registros padrão do sistema vs. registros
+  do usuário.** Prática observada em sistemas profissionais: registros que
+  seriam comuns a qualquer usuário (ex: templates de gastos recorrentes como
+  "conta de água", "conta de luz") ocupam uma faixa de ID reservada (ex: 1 a
+  99.999), enquanto registros criados por um usuário específico começam a
+  partir de outra faixa (ex: 100.000+). Isso não é uma feature do MVP nem
+  uma prioridade agora — é uma consideração de modelagem de banco de dados
+  para não fechar portas, relevante quando o schema for desenhado de fato
+  (Phase 11/12 do roadmap). Implicaria em relacionamentos N-para-N entre
+  usuário e entidades como gasto recorrente, com tabelas intermediárias,
+  caso o suporte a múltiplos usuários seja implementado de verdade.
+
+---
+
 ## Funcionalidades mapeadas para versões futuras (fora do escopo atual)
 
 - Módulo completo de renda variável: registro de ordens de compra e venda
@@ -573,7 +614,16 @@ Identificados como necessários para superar a limitação do bloco de notas:
 - Cálculo automático de rendimento de renda fixa pelo app
 - Integração com APIs bancárias para importação automática de dados
 - Integração com B3 ou custodiantes para posição de renda variável
-- Controle granular de dividendos por empresa/fundo com histórico mensal
+- Controle granular de dividendos por empresa/fundo com histórico mensal.
+  Não descartado — apenas sem urgência hoje porque os valores recebidos
+  atualmente são pequenos e não compensam o esforço de rastreamento (ver
+  seção 7). Fica no backlog para quando o volume de dividendos recebidos
+  justificar o controle granular. Nota conceitual: dividendo é o espelho da
+  "Explicação de Gasto" (seção 10), só do lado da receita — uma fonte de
+  renda "Dividendos" composta por múltiplos recebimentos individuais
+  (dividendo, JCP, JCC) de diferentes empresas/fundos. A nível de dado, o
+  conceito de "composição" é o mesmo dos dois lados (entrada ou saída), só
+  muda a direção do fluxo
 
 ---
 
@@ -585,6 +635,24 @@ Identificados como necessários para superar a limitação do bloco de notas:
   preencher o campo em foco
 - Elimina a necessidade de alternar entre o app e a calculadora do sistema
   para cálculos auxiliares durante o registro de gastos ou composições
+
+### Calculadora de Renda Fixa (ferramenta separada, pós-MVP)
+Diferente da calculadora simples acima, esta é uma ferramenta de simulação:
+projeção de rendimento de um investimento de renda fixa dado valor, taxa e
+prazo, permitindo comparar cenários antes de investir. Já prevista no roadmap
+geral (Phase 10 — "Fixed-income calculator"). Depende do estudo de metodologia
+de cálculo de rendimento mencionado na seção 7.
+
+---
+
+## 16.1 Busca de investimento por carteira (pós-MVP)
+
+### Requisito
+Permitir buscar um ativo ou aporte específico e ver a qual Carteira ele
+pertence. Como no modelo de dados todo aporte já nasce vinculado a uma
+Carteira (seção 7), essa busca é uma consulta direta sobre dado existente —
+não requer estrutura nova. Útil quando o usuário tem muitas carteiras e
+precisa localizar rapidamente onde um investimento específico está alocado.
 
 ---
 
@@ -630,26 +698,93 @@ Carteiras de longo prazo (ex: aposentadoria) podem conter renda variável.
 - Evolução de patrimônio rastreada por Carteira individualmente, não só
   no agregado total
 
-### Duas visões consolidadas cruzando carteiras
+### Carteira e instituição custodiante são dimensões independentes
+Uma Carteira (objetivo) e a instituição financeira onde um aporte está
+custodiado não são a mesma coisa — são dimensões ortogonais. A mesma Carteira
+(ex: "Aposentadoria") pode ter ações custodiadas na corretora A, Tesouro
+Direto custodiado no banco B, e um CDB custodiado no banco C. Da mesma forma,
+a mesma instituição pode aparecer em várias carteiras diferentes. O modelo de
+dados não deve acoplar carteira e instituição — cada aporte referencia sua
+Carteira e sua instituição custodiante de forma independente.
+
+### Tela principal de patrimônio consolidado (ponto de entrada)
+
+**Motivação:** hoje o usuário não tem, em lugar nenhum, a visão real do
+patrimônio total consolidado — o dinheiro está espalhado em múltiplas
+instituições e o usuário precisa abrir cada app bancário separadamente e
+somar mentalmente, sem nunca ver o número real e completo de uma vez. Ver
+progresso patrimonial consolidado é um dos fatores que mais sustentam
+disciplina e motivação em finanças pessoais a longo prazo — é feedback
+concreto de que o esforço está funcionando. Dentro do módulo de
+investimentos, essa é provavelmente a tela de maior impacto para o usuário,
+não apenas mais uma visão entre outras.
+
+O módulo de investimentos precisa de uma tela principal que sirva como ponto
+de entrada, antes de navegar para qualquer carteira específica:
+
+- Valor total do patrimônio, somando todas as Carteiras
+- **Toggle para incluir ou excluir carteiras de terceiros** do total exibido
+  — por padrão deveria mostrar só o patrimônio próprio, com opção de ver o
+  consolidado incluindo o que é administrado para terceiros
+- Gráfico de composição do total (pizza/donut) mostrando de onde vem cada
+  percentual do patrimônio — por classe de ativo, por carteira, ou pela
+  visão que o usuário escolher
+- Capacidade de "desembraçar" (drill-down): a partir do total, navegar para
+  o detalhe de uma classe específica, e de lá para o detalhe de uma carteira
+  específica, e de lá para os aportes individuais — cada nível mostrando a
+  composição percentual daquele recorte
+
+### Granularidade dentro de uma classe de ativo
+Além da composição por classe (ex: % renda fixa vs. % renda variável), o
+app deve mostrar a composição interna de uma classe — quanto cada ativo
+individual representa dentro dela (ex: dentro da carteira de ações, quanto
+cada ação específica representa do total: 15%, 8%, etc.). Serve para avaliar
+concentração/equilíbrio da carteira, não só a divisão macro entre classes.
+Essa granularidade se aplica em cascata em qualquer nível: classe → subclasse
+(ex: dentro de renda fixa: Tesouro Selic, CDB, LCI) → ativo individual —
+todos usando o mesmo padrão de drill-down descrito acima.
+
+Depende de consulta de preço unitário atualizado dos ativos (via API de
+mercado), já que o peso de cada ativo na carteira é calculado por valor
+monetário (quantidade × preço atual), não pela quantidade de unidades.
+
+**Nota sobre peso por valor vs. peso por quantidade:** o peso correto para
+decisões de rebalanceamento é sempre por **valor monetário** — é o padrão de
+teoria de portfólio. Peso por quantidade de unidades (ex: "tenho mais ações
+de X do que de Y") não indica concentração de risco real, porque o preço
+unitário varia muito entre ativos diferentes — é uma métrica de curiosidade,
+não de decisão financeira. Documentado aqui como possível visão secundária
+de baixa prioridade, não como requisito funcional com o mesmo peso da visão
+por valor.
+
+### Visões consolidadas cruzando carteiras
 Além da visão por Carteira individual, o app deve suportar visões agregadas
 que atravessam várias carteiras:
 
+- **Consolidado por instituição financeira** — todo o patrimônio agrupado
+  por onde está custodiado, atravessando todas as Carteiras (ex: "quanto
+  tenho na Rico" somando aportes de várias carteiras diferentes que têm
+  ativos ali)
 - **Consolidado por característica do ativo** — ex: "tudo em renda fixa",
   "tudo em dólar/exterior", "tudo em renda variável" — agrupando aportes de
   todas as carteiras que compartilham essa característica
-- **Consolidado por produto/instituição específica** — ex: "todos os aportes
+- **Consolidado por produto financeiro específico** — ex: "todos os aportes
   que existem dentro deste produto financeiro específico (mesmo CDB, mesma
   instituição)", independente de qual carteira cada aporte pertence
 
-A segunda visão resolve um problema prático real: muitas instituições não
-permitem rotular ou nomear individualmente cada aporte dentro do mesmo
-produto — na tela do banco, vários depósitos do mesmo CDB aparecem misturados
-sem identificação, e o usuário precisa cruzar valor + data de aplicação (e
-às vezes vencimento) para saber a qual carteira cada um pertence. No app,
-cada aporte já nasce vinculado à sua carteira de origem — essa visão
-consolidada por produto funciona como um espelho da tela confusa do banco,
-mas já com a identificação de carteira resolvida, útil para conferência
-contra o extrato real.
+O usuário deve poder escolher entre essas visualizações (toggle/seletor de
+visualização), sem que uma substitua a outra — são lentes diferentes sobre o
+mesmo dado.
+
+A visão por produto específico resolve um problema prático real: muitas
+instituições não permitem rotular ou nomear individualmente cada aporte
+dentro do mesmo produto — na tela do banco, vários depósitos do mesmo CDB
+aparecem misturados sem identificação, e o usuário precisa cruzar valor +
+data de aplicação (e às vezes vencimento) para saber a qual carteira cada um
+pertence. No app, cada aporte já nasce vinculado à sua carteira de origem —
+essa visão consolidada por produto funciona como um espelho da tela confusa
+do banco, mas já com a identificação de carteira resolvida, útil para
+conferência contra o extrato real.
 
 ---
 
