@@ -58,6 +58,38 @@ Ideia de sistema de ícones para facilitar reconhecimento visual rápido:
 - Alternativa: tudo dentro do gráfico de composição da carteira, com
   filtros/visualizações diferentes ao invés de telas separadas
 
+## Lista expansível/colapsável por instituição (padrão "acordeão")
+
+Para visualizar investimentos agrupados por instituição financeira (tanto no
+consolidado geral quanto dentro de uma carteira específica), considerar um
+padrão de lista expansível, similar ao "People also ask" do Google ou uma
+seção de FAQ: cada instituição aparece como uma linha recolhida, com ícone
+da instituição e (possivelmente) o percentual que representa do total; ao
+tocar, expande revelando os aportes/ativos individuais daquela instituição.
+
+Exemplo de estrutura recolhida:
+```
+Instituição A (80%) ⌄
+Instituição B (20%) ⌄
+```
+
+Ao expandir "Instituição A", revela os aportes individuais com seus ícones:
+```
+Instituição A (80%) ⌃
+  Produto X — valor, data de aplicação
+  Produto Y — valor, data de aplicação
+```
+
+Mesmo padrão se aplicaria à visão consolidada geral de investimentos (fora
+do contexto de uma carteira específica): tocar no ícone/linha de uma
+instituição expande para mostrar os investimentos ali custodiados,
+atravessando todas as carteiras.
+
+Também considerar ícone por instituição financeira ao lado de cada ativo
+dentro da visão de uma carteira, para identificação visual rápida de onde
+cada aporte está custodiado (ex: dentro da carteira do exemplo, um depósito
+com ícone do Banco A, outros dois com ícone do Banco B).
+
 ## Comportamento de gráficos em tela pequena
 
 - Pensar no comportamento de rolagem vs. troca de tela quando um gráfico

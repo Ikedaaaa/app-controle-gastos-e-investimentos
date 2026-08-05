@@ -48,6 +48,95 @@ Outro padrão: o período pode não ser montado com antecedência. Uma conta
 vence, é paga com o saldo disponível no momento, e o período é formalizado
 depois. O app deve permitir isso sem atrito.
 
+### Decisão: período semanal não será implementado, mas a modelagem não deve impedi-lo
+Considerado e descartado como funcionalidade — a probabilidade real de
+precisar de granularidade semanal é baixa (salário/adiantamento semanal não
+é um cenário plausível para o usuário). Não será implementado no MVP nem
+está planejado para versões futuras.
+
+Ainda assim, a modelagem de dados de Período deve ser genérica o suficiente
+para não fechar essa porta sem esforço: um Período é um intervalo de datas
+(`data_inicio`, `data_fim`) com um rótulo de `tipo` (mensal, quinzenal, e
+futuramente semanal se necessário) e uma referência ao mês. A lógica de
+cálculo do fluxo não deve depender de regras fixas como "quinzenal = dias
+1-15 ou 16-30" — deve operar sobre o intervalo de datas do Período,
+independente da duração. Modelado assim, suportar semanal no futuro seria
+apenas criar Períodos com intervalos de 7 dias, sem exigir lógica nova.
+
+O tipo do Período é independente entre períodos consecutivos — um mês pode
+ser quinzenal e o seguinte mensal, sem quebrar a cadeia de saldo remanescente
+(que depende apenas da sequência cronológica de períodos fechados, não do
+tipo). O tipo é escolhido na criação do Período; alterá-lo depois que já
+existem itens dentro não é suportado — nesse caso, o período deve ser
+recriado do zero.
+
+### Esboço de modelagem: Mês e Período
+Estrutura considerada para a entidade que agrupa períodos:
+
+- **Mês** — `ano`, `numero_mes`, `tipo` (mensal/quinzenal). Agrega um ou
+  mais Períodos. Não requer uma tabela `Ano` separada — ano é apenas um
+  campo em Mês; uma tabela dedicada só se justificaria se surgir necessidade
+  de atributos próprios do ano (ex: meta anual, resumo anual fechado), o
+  que pode ser introduzido depois sem grande impacto se necessário
+- **Período** — `data_inicio`, `data_fim`, FK para o Mês. **Não tem campo
+  `tipo` próprio** — o tipo é sempre inferido do Mês ao qual o período
+  pertence. Duplicar `tipo` em Período reintroduziria exatamente o problema
+  de duplicidade de dados que o app existe para eliminar: duas fontes de
+  verdade para o mesmo fato, com risco de divergirem (ex: um mês marcado
+  como "mensal" tendo um período marcado como "quinzenal" dentro dele)
+
+**Ponto de atenção:** a FK de Período para Mês representa o **mês de
+referência** (o mês cujo orçamento aquele período está compondo), não
+necessariamente o mês calendário das datas. Um período recebido no fim de
+julho pode compor os gastos de agosto (ver seção sobre salário recebido no
+fim do mês cobrindo a primeira quinzena do mês seguinte). A FK deve apontar
+para o mês de referência, não ser inferida da data.
+
+### Enforcement de regras de negócio: schema vs. aplicação
+Mesmo com `tipo` centralizado em Mês, nada nos constraints básicos do SQLite/
+Room impede, por exemplo, um insert manual criando três períodos dentro de
+um mês quinzenal, ou períodos com datas sobrepostas. Impedir isso 100% via
+constraints de banco exigiria triggers ou lógica mais complexa, desproporcional
+para um app local de uso pessoal. Decisão pragmática: o **schema** garante o
+básico (tipo é um enum válido, FKs existem); a **camada de
+aplicação/repositório** garante a regra de negócio (não permitir criar um
+terceiro período num mês quinzenal, não permitir datas sobrepostas). Essa
+divisão de responsabilidade é normal em sistemas relacionais e não representa
+abandono de rigor — só reconhece que regra de negócio complexa vive melhor
+no código da aplicação do que espalhada em constraints de banco.
+
+### Criação de período: automática, sem perguntar, editável depois
+Ao criar um novo Período dentro de um Mês, a criação é automática e
+determinística, sem exigir escolha do usuário:
+- **Mês mensal** — cria automaticamente com `data_inicio = dia 1`,
+  `data_fim = último dia do mês` (calculado por calendário, considerando
+  28/29/30/31 dias)
+- **Mês quinzenal** — se não existe nenhum período ainda, cria o primeiro
+  (dia 1 ao dia 15); se já existe o primeiro, cria o segundo (dia 16 ao
+  último dia do mês). Não há ambiguidade que justifique perguntar ao
+  usuário — a próxima criação sempre tem exatamente uma resposta correta
+  dado o estado atual do mês
+
+Perguntar ao usuário aqui seria fricção desnecessária, na contramão do
+princípio de reduzir esforço manual que já orienta todo o app. Se o usuário
+tiver um caso atípico (datas de pagamento fora do padrão), o período criado
+automaticamente pode ser editado depois — já coberto pelo princípio geral
+de flexibilidade (nada é travado).
+
+Exercício de extensibilidade (não para implementar — ver decisão sobre
+período semanal acima): se um mês fosse do tipo semanal, a mesma lógica de
+preenchimento sequencial se aplicaria — cada novo período começa onde o
+anterior parou, em janelas de 7 dias, até o fim do mês. A última janela do
+mês pode ficar menor que 7 dias, já que meses não dividem por 7 igualmente
+— consequência natural do calendário, não uma mudança de modelo. (Alternativa
+não detalhada: alinhar semanas ao calendário real, domingo a sábado, ao
+invés de blocos fixos de 7 dias a partir do dia 1 — irrelevante aprofundar
+agora, já que a feature não será implementada.)
+
+A lógica de calcular essas datas (calendário, últimos dias do mês, sequência
+de janelas) é responsabilidade da camada de aplicação, não do modelo de
+dados. O banco armazena apenas o intervalo de datas resultante.
+
 **Princípio central de design: flexibilidade acima de tudo.**
 O app não deve impedir nenhuma ação. Gastos recorrentes são sugestões,
 não obrigações. Períodos são estruturas opcionais, não pré-requisitos.
@@ -129,13 +218,56 @@ saldo remanescente.
 
 ## 4. Painel analítico do período
 
-O app calcula e exibe automaticamente para cada período:
-- Total destinado a gastos fixos e variáveis
-- Total destinado a acúmulo (caixinhas)
-- Total destinado a investimentos
+O app calcula e exibe automaticamente para cada período um quadro de resumo,
+espelhando a estrutura que o usuário tentava manter manualmente nas
+anotações antes de abandonar por ser trabalhoso demais:
+
+- Total de Gasto, Acúmulo, Investido e Total Geral — tanto **Previsto**
+  quanto **Realizado** (refletindo a distinção já documentada na seção 2
+  para fontes de entrada — aqui aplicada aos gastos do período)
+- Total no Crédito — soma das **compras feitas no crédito durante o período**
+  (novo endividamento gerado agora), não o valor da fatura a pagar. São
+  conceitos diferentes: a fatura do período pode incluir parcelas de compras
+  de meses anteriores, enquanto o "Total no Crédito" reflete só o volume de
+  compras parceladas/no crédito originadas neste período específico
+- Cada total acima **separado entre "Meu" e "Terceiro"**, além do total
+  combinado — reflete o padrão observado nas anotações onde o usuário
+  separava "Gasto Meu" de "Gasto Outros" para saber sua exposição real
+  distinta da de terceiros administrados
 - Saldo final do período
 
-Não requer preenchimento manual — é derivado dos itens do fluxo por categoria.
+Não requer preenchimento manual — é totalmente derivado dos itens do fluxo
+por categoria e por titular (usuário vs. terceiro). A forma de apresentação
+na tela (seção fixa, aba própria, popup) é decisão de design a definir
+depois — o requisito aqui é o dado, não o layout.
+
+### Duas visões do período: simplificada (resumo) e detalhada (fluxo) com drill-down
+O período tem duas visões complementares, não concorrentes:
+- **Simplificada** — o quadro de resumo acima, com os totais agregados
+- **Detalhada** — o fluxo completo de subtração em cascata (seção 3), item
+  por item
+
+A visão simplificada deve permitir **drill-down** para a detalhada: ao
+interagir com um total específico do resumo (ex: tocar em "Total Gasto"),
+o app navega para a lista filtrada apenas dos itens que compuseram aquele
+total. A visão simplificada funciona como um painel de entrada rápida, e a
+detalhada como a fonte completa por trás de cada número — nunca dados
+duplicados, sempre a mesma origem (os itens do fluxo), só apresentados em
+dois níveis de agregação diferentes.
+
+### Terceira visão: navegação por calendário (opcional, baixa prioridade)
+Cada item do fluxo já tem uma data (seção 3), o que permitiria uma terceira
+forma de navegar pelos mesmos dados: uma visão de calendário onde o usuário
+seleciona um dia específico e vê apenas os itens daquela data — inspirada
+no padrão comum em apps de finanças pessoais (calendário mensal, toque no
+dia, lista filtrada, navegação dia anterior/seguinte). Não requer nenhuma
+estrutura de dado nova (a data já existe em cada item).
+
+**Avaliação:** valor questionável para o padrão de uso real do usuário —
+poucos gastos por dia, muitos dias sem nenhum item, o que tornaria a
+navegação dia-a-dia mais vazia do que útil. Buscar por data já é possível
+na lista detalhada padrão. Fora do MVP e de baixa prioridade — não
+descartada, mas sem motivo para priorizar frente a outras visões.
 
 ---
 
@@ -697,6 +829,23 @@ Carteiras de longo prazo (ex: aposentadoria) podem conter renda variável.
   renda variável, % ações vs. % FIIs vs. outros)
 - Evolução de patrimônio rastreada por Carteira individualmente, não só
   no agregado total
+
+### Breakdown por instituição dentro de uma carteira específica
+Complementar à visão consolidada por instituição (que atravessa todas as
+carteiras): dentro de uma única Carteira, mostrar quanto do seu total está
+custodiado em cada instituição (ex: dentro da carteira "Aposentadoria", X%
+na Corretora A, Y% no Banco B). É a mesma informação vista pela direção
+oposta — de "quanto tenho na instituição A no total" para "como esta
+carteira específica se distribui entre instituições".
+
+Dentro da carteira, os aportes/ativos devem ser **agrupados visualmente por
+instituição** (não apresentados como lista plana única) — cada grupo exibindo
+o percentual que aquela instituição representa do total da carteira. A
+intenção é permitir que o usuário identifique rapidamente, dentro de uma
+carteira, onde cada parte do dinheiro está guardada. (A forma exata de
+apresentação — ícones, lista expansível — é sugestão de UI, ver documento
+próprio; aqui o requisito é apenas que o agrupamento e o percentual por
+instituição existam como dado exposto ao usuário.)
 
 ### Carteira e instituição custodiante são dimensões independentes
 Uma Carteira (objetivo) e a instituição financeira onde um aporte está
