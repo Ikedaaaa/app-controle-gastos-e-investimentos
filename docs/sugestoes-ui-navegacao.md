@@ -37,6 +37,75 @@ A definir/revisar quando a identidade visual do app for desenhada.
 - Ao cadastrar uma instituição financeira associada a um investimento,
   permitir vincular um ícone/símbolo (como o ícone do app da instituição)
 
+## Layout de item na lista do fluxo
+
+Ideia de disposição para cada item da lista (checkbox, categoria, descrição,
+valor, data), considerando que não cabe tudo numa única linha em largura de
+tela de celular. Proposta inicial a explorar em duas linhas:
+
+```
+[checkbox] [descrição — ocupa a maior parte da largura]      [data]
+[ícone categoria]                                     [valor com sinal]
+```
+
+Ideias/dúvidas levantadas para resolver no design de fato:
+- Checkbox e ícone de categoria como elementos pequenos, sem competir por
+  espaço com a descrição
+- Data pode ficar pequena/discreta num canto — avaliar se fica legível o
+  suficiente ou se precisa de destaque maior
+- Valor com sinal (`+`/`-`) explícito junto ao número, com cor de reforço
+  (verde/vermelho) — nunca só a cor de fundo do item (requisito de
+  acessibilidade, já registrado no documento de requisitos)
+- Descrição pode ocupar visualmente o espaço de duas linhas dependendo do
+  tamanho da fonte, sem que o texto realmente quebre em duas linhas sempre
+
+Nenhuma proporção exata foi validada — é ponto de partida para prototipagem,
+não medida final.
+
+### Layout alternativo sugerido: duas colunas com valor em destaque
+
+Padrão comum em apps financeiros maduros (extratos bancários em geral):
+duas colunas, onde a coluna direita é dedicada exclusivamente ao valor, com
+fonte maior/mais peso visual, e a esquerda concentra ícone + texto:
+
+```
+[checkbox] [ícone] Descrição (negrito, linha principal)      + R$50,00
+                    Data (cinza, menor, linha secundária)
+```
+
+O valor ganha destaque não por ocupar mais espaço físico, mas por ficar
+isolado na própria coluna com maior peso de fonte — segue o padrão de
+leitura financeira onde o olho escaneia a coluna da direita para comparar
+valores rapidamente. Ícone específico (ex: loja/estabelecimento) não
+aparece na lista, só na tela/modal de detalhe do item — na lista aparece só
+o ícone genérico da categoria (gasto, investimento, etc.), para não
+competir visualmente com muitos ícones diferentes.
+
+### Controle expansível por item para revelar o saldo em cascata
+
+Cada item da lista poderia ter um pequeno controle de expansão (ex: ícone
+de seta "v"), distinto do toque no restante do item. Tocar nesse controle
+específico expande apenas para revelar "Saldo após este item: R$xxx,xx",
+sem abrir modal ou navegar. Tocar em qualquer outra parte do item (fora
+desse controle) abre o modal/tela de detalhe completo (ver abaixo). Isso
+evita que o saldo em cascata — dado importante para planejamento futuro,
+mas irrelevante para itens já concluídos — precise estar sempre visível na
+linha do item, poluindo a lista.
+
+### Detalhe do item: modal (bottom sheet) para casos simples, tela dedicada para composições complexas
+
+Ao invés de expandir o item inline dentro da própria lista (que quebraria a
+leitura da sequência do fluxo, já que a ordem dos itens tem significado):
+- Item simples (sem Explicação de Gasto) → abrir um modal/bottom sheet com
+  o detalhe, sem navegar para nova tela
+- Item com Explicação de Gasto (múltiplas fontes, nota longa) → abrir tela
+  dedicada, por ter conteúdo demais para um modal pequeno
+
+O padrão de lista expansível tipo "FAQ" (mencionado acima) funciona bem
+para agregações planas sem ordem sequencial importante (ex: lista de
+instituições financeiras), mas não é recomendado para a lista principal do
+fluxo, por essa quebra de leitura da sequência.
+
 ## Ícones genéricos por tipo de gasto
 
 Ideia de sistema de ícones para facilitar reconhecimento visual rápido:

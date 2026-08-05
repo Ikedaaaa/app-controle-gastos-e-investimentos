@@ -176,7 +176,52 @@ não resolvido que bloqueia tudo que vem depois.
   automaticamente — sem necessidade de refazer a soma manualmente ao editar
   uma fonte
 - Saldo remanescente ao fim de um período deve transitar automaticamente
-  para o próximo como entrada
+  para o próximo. **Correção de arquitetura em relação a uma versão anterior
+  deste documento:** o saldo final de cada período deve ser armazenado
+  (cached), não recalculado do zero a cada leitura — caso contrário, exibir
+  um período recente exigiria recalcular toda a cadeia de períodos anteriores
+  desde o início, o que é inviável em performance conforme o histórico cresce.
+  Em vez disso, quando a edição de um item muda o saldo final de um período,
+  o app deve **recalcular em cascata, avançando período por período** —
+  período N+1 usa o novo valor de N, recalcula seu próprio saldo final,
+  dispara a atualização de N+2, e assim por diante até o período mais recente
+  existente. Cada passo é simples (O(1)); a cadeia inteira é uma caminhada
+  linear, não recursiva/exponencial — recalcular décadas de períodos em
+  sequência é trivial computacionalmente. Essa cascata deve rodar como
+  operação em background (ver WorkManager, já previsto no roadmap para
+  trabalho assíncrono), sem bloquear a interface enquanto propaga — o usuário
+  edita um item antigo, a cascata roda silenciosamente, e os períodos
+  seguintes são atualizados sem travar o app
+
+### Fluxo: múltiplas cascatas independentes dentro do mesmo período
+Nas anotações reais, um período pode ter mais de uma cascata de subtração
+funcionando em paralelo, não uma lista única — por exemplo, adiantamento e
+saldo remanescente somados numa cascata, enquanto férias e 13º cada um tinha
+sua própria cascata separada. Para suportar isso, é necessária uma entidade
+intermediária entre Período e Item, aqui chamada de **Fluxo**: um Período
+tem um ou mais Fluxos, cada Fluxo é uma cascata de subtração ancorada num
+conjunto de fontes de renda somadas entre si. Por padrão, um Período tem um
+único Fluxo (todas as fontes somadas); o usuário pode criar Fluxos
+adicionais para tratar uma fonte separadamente quando quiser decidir a
+alocação daquele dinheiro de forma independente do fluxo principal.
+
+Navegação decorrente: o usuário entra no Período, vê a lista de Fluxos
+existentes (geralmente apenas um), escolhe um, e vê a lista de itens daquele
+Fluxo específico, com saldo próprio.
+
+### Período fechado para edição: não implementar bloqueio
+Editar um item de um período antigo pode alterar seu saldo final, que por
+sua vez afeta o saldo remanescente do período seguinte. Um mecanismo de
+"fechar período para edição" foi considerado, mas não é recomendado: um
+bloqueio rígido contradiz o princípio de flexibilidade já estabelecido
+(edição retroativa é permitida, nada é travado — ver seção acima). A solução
+adotada é arquitetural, não uma trava de UI: saldo remanescente como
+referência viva (ver acima) elimina o risco de dado desatualizado na raiz,
+sem necessidade de lock.
+
+Se o usuário quiser uma sensação de "conferido" por tranquilidade pessoal,
+uma flag simples e não-bloqueante (`revisado: true/false`) pode ser oferecida
+— funciona como um bookmark pessoal, sem impedir nenhuma edição futura.
 
 ---
 
@@ -201,18 +246,159 @@ saldo remanescente.
 - O saldo acumulado é recalculado automaticamente após cada item
 - Entradas no meio do fluxo são suportadas (ex: resgates de carteiras que
   aumentam o saldo antes de uma dedução)
-- Itens podem ser reordenados livremente (drag and drop)
+- Itens podem ser reordenados livremente (drag and drop). A ordem na lista
+  representa a **sequência cronológica real** dos fatos — a ordem em que os
+  eventos aconteceram ou estão planejados para acontecer. É o usuário quem
+  posiciona manualmente cada item no ponto da sequência onde ele ocorre,
+  exatamente como já fazia nas anotações originais (ex: se a conta de luz
+  fosse paga antes da fatura do cartão em determinado mês, ela apareceria
+  antes na lista, refletindo a ordem real dos fatos)
+- **A data de um item não deve disparar reordenação automática.** Datas nem
+  sempre são conhecidas ou preenchidas para todos os itens (metadado
+  opcional), o que torna qualquer tentativa de reordenação automática por
+  data ambígua e arriscada — poderia mover um item silenciosamente para uma
+  posição errada sem o usuário perceber. A ordem manual (drag and drop)
+  permanece a única fonte de verdade sobre sequência. Se uma função de
+  "ordenar por data" for oferecida no futuro, deve ser uma ação explícita
+  acionada pelo usuário (ex: botão dedicado), nunca um efeito colateral
+  automático de editar a data de um item
+- **Correção sobre hora do item:** avaliado e descartado guardar horário
+  (apenas data) no item — não há valor prático em registrar a hora exata em
+  que um gasto ocorreu (esforço de digitação sem retorno; se um dia for
+  necessário saber a hora exata de uma transação, o extrato do banco é a
+  fonte de verdade, não o app). O agendamento de notificação (seção 11) é
+  um conceito independente da data do item — vive em estrutura própria
+  (ver seção 11), não é derivado do campo de data do item em si
 - Menu de contexto por item com opções: editar, excluir, inserir acima,
   inserir abaixo
 - Um item pode ter estado **"ignorado"**: fica visível na lista mas não entra
   no cálculo do saldo. Substitui o padrão de "comentar" gastos com `***` ou
   `/* ... */` nas anotações
+- Um item pode ter **zero ou mais tags livres**, complementares à categoria
+  principal (seção 5). Enquanto a categoria classifica a natureza contábil
+  do item (gasto, investimento, acúmulo), tags são livres e múltiplas,
+  permitindo classificações cruzadas para filtro/relatório futuro — ex: um
+  gasto pode ter tags `roupas` e `shopee` simultaneamente, permitindo
+  responder "quanto gastei com roupas", "quanto gastei na Shopee" ou "quanto
+  gastei com roupas na Shopee" com o mesmo dado. Sem hierarquia ou taxonomia
+  fixa — o usuário cria tags livremente, na mesma filosofia de flexibilidade
+  já adotada para descrição e notas
 - Gastos recorrentes são pré-carregados no início de cada período com seus
   valores padrão, editáveis antes de confirmar
 - Gastos com valor variável são pré-carregados com o valor do mês anterior
   como sugestão
 - Estado por item: **pendente** ou **realizado** (checkbox). Substitui o `*`
   e o `- OK` das anotações
+- **Cascata de checkbox baseada na ordem cronológica.** Como a ordem da
+  lista é a sequência real dos fatos (ver acima), marcar/desmarcar um item
+  tem implicação lógica sobre os demais:
+  - **Marcar** o item N como realizado → marca automaticamente todos os
+    itens *antes* de N na lista (cronologicamente anteriores — se algo
+    depois já aconteceu, o que veio antes também aconteceu)
+  - **Desmarcar** o item N → desmarca automaticamente todos os itens
+    *depois* de N (cronologicamente posteriores — a certeza deles dependia
+    de N ter ocorrido primeiro)
+  - **Dependência:** essa cascata só é correta se a lista estiver
+    efetivamente na ordem real dos acontecimentos no momento da marcação.
+    O fluxo de trabalho esperado é reordenar primeiro (drag and drop,
+    refletindo a realidade quando ela diverge do planejado) e só então
+    marcar/desmarcar — não o contrário
+  - **Invariante decorrente:** como marcar N sempre marca tudo antes de N,
+    o conjunto de itens marcados forma sempre um **prefixo contíguo** da
+    lista, a partir do topo — nunca há um item desmarcado "no meio" de um
+    trecho marcado
+  - **Reordenação e o invariante:** após qualquer reordenação (drag and
+    drop), o conjunto de itens marcados deve permanecer um prefixo
+    contíguo, sem buracos. Regra unificada: considere o prefixo marcado
+    formado pelos **demais** itens (excluindo o item que está sendo
+    movido) — seja `k` a posição imediatamente após esse prefixo. Ao mover
+    um item para a posição `p`:
+    - Se `p ≤ k` (o item cai dentro ou na borda imediata do prefixo dos
+      demais) → o item movido **fica marcado**
+    - Se `p > k` (o item cai em qualquer posição além dessa borda,
+      próxima ou distante) → o item movido **fica desmarcado**,
+      independente do estado que tinha antes de ser movido
+    - Apenas o **item movido** tem seu estado recalculado — os demais
+      itens continuam formando o prefixo contíguo naturalmente, sem
+      necessidade de cascata adicional
+- O saldo atual (realizado) é calculado como: entradas realizadas − soma de
+  todos os itens marcados como realizados
+
+### Informações mínimas necessárias por item na lista
+Cada item exibido na lista precisa apresentar, no mínimo:
+- Estado (checkbox pendente/realizado)
+- Categoria (representada visualmente por ícone — detalhes de qual ícone
+  ficam nas sugestões de UI)
+- Descrição
+- Valor, com o sinal (+ ou -) sempre explícito junto ao número, nunca
+  representado apenas por cor de fundo do item
+- Data
+
+**Requisito de acessibilidade (não negociável):** cor nunca deve ser o único
+portador de significado. Soma/subtração deve ser sempre identificável pelo
+sinal explícito (`+`/`-`) junto ao valor — a cor (verde/vermelho) é reforço
+visual redundante, não a fonte primária da informação. Isso garante uso
+correto por usuários com daltonismo ou qualquer limitação de percepção de
+cor.
+
+**Nota sobre saldo acumulado:** diferente do bloco de notas, onde o saldo
+`=` precisa ser repetido após cada linha por ser texto estático, no app o
+saldo atual deve estar sempre visível de forma centralizada (ex: um
+cabeçalho fixo que atualiza conforme os itens são somados/subtraídos), sem
+necessidade de repetir o saldo em cada item individual da lista — isso
+seria redundância visual sem função no contexto interativo do app.
+
+Tags (definidas acima) não precisam ocupar espaço na linha principal do
+item — são metadado para filtro e relatório, não informação de leitura
+rápida obrigatória.
+
+### Ponto de atenção: conflito potencial entre gestos de interação
+Dois comportamentos distintos foram planejados usando possivelmente o mesmo
+gesto de "pressionar e segurar": o checkbox de status (pendente/realizado)
+e a seleção múltipla de itens para somar (seção 12). Se ambos usarem o mesmo
+gesto, há ambiguidade de interação. Recomendação a validar no design: o
+checkbox de status deve ser ativado por toque simples e estar sempre
+visível; o modo de seleção múltipla (ativado por pressionar e segurar) deve
+ter um indicador visual diferente, evitando que o usuário confunda os dois
+comportamentos.
+
+### Saldo do período: a cascata é o instrumento central de planejamento
+O saldo projetado após cada item **não é informação secundária de
+auditoria** — é a razão de ser do fluxo. O uso real é simular o futuro antes
+dele acontecer: "depois de pagar esta conta, quanto vou ter? Quando chegar
+na fatura, vou ter dinheiro suficiente para cobrir a parte que não vem de
+resgate de caixinha?" Isso só funciona se a sequência for cronológica (ver
+acima) e se o saldo projetado após cada item permanecer visível durante a
+navegação pela lista — não escondido atrás de um toque de detalhe.
+
+Duas informações de saldo coexistem, ambas relevantes, mas com visibilidade
+diferente:
+
+- **Saldo em cascata por item** — quanto resta imediatamente após cada item,
+  considerando a ordem cronológica da lista. É calculado e mantido
+  atualizado automaticamente para todo item (sem esforço manual, ao
+  contrário do bloco de notas), mas **não precisa ficar sempre visível na
+  linha do item** — itens já concluídos no passado, esse dado é só
+  curiosidade histórica; o valor real está nos itens futuros/planejados,
+  onde serve para simular se o planejamento cabe na renda esperada.
+  Recomendação de exibição: elemento expansível por item (mesmo padrão de
+  lista expansível já sugerido para outras visões — ver documento de UI),
+  revelando "Saldo após este item: R$xxx,xx" apenas quando o usuário
+  interage com um controle específico de expansão, sem abrir o modal
+  completo de detalhe do item
+- **Saldo atual (realizado)** — calculado apenas com base nos itens já
+  efetivamente marcados como realizados, independente de sua posição na
+  lista. Fixo e sempre visível (ex: rodapé da tela), representa "quanto eu
+  realmente tenho agora"
+
+### Alerta de saldo previsto insuficiente
+Quando a soma dos itens previstos no fluxo supera a renda prevista do
+período antes de chegar ao fim da lista, o saldo em cascata fica negativo
+em algum ponto. Isso deve ser sinalizado visualmente de forma clara (ex:
+destaque de cor/aviso no ponto onde o saldo fica negativo) — é o alerta que
+avisa "esse planejamento não cabe na renda esperada para o período", análogo
+ao cenário real de um mês de férias com renda baixa onde o gasto planejado
+excede o disponível.
 
 ---
 
@@ -662,6 +848,17 @@ carteira de um terceiro tinha múltiplos depósitos ativos simultaneamente.
   realocar, etc.)
 - Horário padrão de notificação configurável globalmente, com override por
   gasto individual
+
+### Notificação como entidade própria, independente da data do item
+O agendamento de notificação (quando o app deve avisar) é conceitualmente
+independente da data do item (quando o gasto ocorre). Deve ser modelado como
+uma estrutura própria (ex: entidade Notificação, com data/hora de disparo
+e referência ao item relacionado), não derivado automaticamente do campo de
+data do item. Isso permite flexibilidade real: notificar num horário
+diferente da data do item (ex: "avisar 1 dia antes, às 9h", ou "avisar no
+mesmo dia, no horário padrão configurado nas preferências do usuário"), sem
+exigir que o item em si carregue um campo de hora que não tem uso prático
+fora desse contexto.
 
 ---
 
