@@ -1179,7 +1179,14 @@ múltiplos usuários no futuro, caso o projeto evolua nessa direção.
   de ações, FIIs e criptomoedas com carteira de ativos no app. Quando o
   usuário decidir comprar, o fluxo seria: resgate da caixinha de reserva de
   oportunidade (aparece como `+` no período) seguido do item de compra do
-  ativo (aparece como `-`), e o ativo é adicionado à carteira de renda variável
+  ativo (aparece como `-`), e o ativo é adicionado à carteira de renda variável.
+  **Lembrete:** existe uma planilha Excel pessoal com o histórico de ordens
+  de compra/venda, indicadores acompanhados e gráficos de evolução da
+  carteira de renda variável já usados no passado. Ao retomar este módulo
+  para levantamento de requisitos detalhado, revisar essa planilha como
+  insumo — ela contém a estrutura real de dados e a lógica de acompanhamento
+  já validada pelo usuário, análoga ao papel que as anotações mensais
+  tiveram para o levantamento de requisitos do MVP
 - Eventos corporativos que alteram quantidade de ativos sem compra
   (bonificações, subscrições, desdobramentos)
 - Cálculo automático de rendimento de renda fixa pelo app
