@@ -39,39 +39,48 @@ A definir/revisar quando a identidade visual do app for desenhada.
 
 ## Layout de item na lista do fluxo
 
-Ideia de disposição para cada item da lista (checkbox, categoria, descrição,
-valor, data), considerando que não cabe tudo numa única linha em largura de
-tela de celular. Proposta inicial a explorar em duas linhas:
-
-```
-[checkbox] [descrição — ocupa a maior parte da largura]      [data]
-[ícone categoria]                                     [valor com sinal]
-```
-
-Ideias/dúvidas levantadas para resolver no design de fato:
-- Checkbox e ícone de categoria como elementos pequenos, sem competir por
-  espaço com a descrição
-- Data pode ficar pequena/discreta num canto — avaliar se fica legível o
-  suficiente ou se precisa de destaque maior
-- Valor com sinal (`+`/`-`) explícito junto ao número, com cor de reforço
-  (verde/vermelho) — nunca só a cor de fundo do item (requisito de
-  acessibilidade, já registrado no documento de requisitos)
-- Descrição pode ocupar visualmente o espaço de duas linhas dependendo do
-  tamanho da fonte, sem que o texto realmente quebre em duas linhas sempre
-
-Nenhuma proporção exata foi validada — é ponto de partida para prototipagem,
-não medida final.
-
-### Layout alternativo sugerido: duas colunas com valor em destaque
+### Layout pensado: duas colunas com valor em destaque, alça de reorder isolada
 
 Padrão comum em apps financeiros maduros (extratos bancários em geral):
 duas colunas, onde a coluna direita é dedicada exclusivamente ao valor, com
-fonte maior/mais peso visual, e a esquerda concentra ícone + texto:
+fonte maior/mais peso visual, e a esquerda concentra os controles + texto.
+Diferente de um extrato bancário puro, este app precisa acomodar também uma
+alça de reordenação (drag and drop) — para não virar uma sequência confusa
+de ícones pequenos competindo por espaço, a alça fica isolada na margem
+esquerda extrema (como um controle "da lista", não "do item"), enquanto
+checkbox e ícone de categoria ficam agrupados como um bloco só, antes da
+descrição:
 
 ```
-[checkbox] [ícone] Descrição (negrito, linha principal)      + R$50,00
-                    Data (cinza, menor, linha secundária)
+[alça]  [checkbox][ícone]  Descrição (negrito, linha principal)   + R$50,00
+                            Data (cinza, menor, linha secundária)
 ```
+
+A alça de reorder é o único gatilho de drag and drop — tocar em qualquer
+outra parte do item não deve iniciar reordenação (ver seção de requisitos
+sobre conflito de gestos), evitando reordenação acidental ao tentar tocar
+no item para abrir seu detalhe.
+
+### Referência real de densidade: apps de player de música (positiva) vs. playlists de vídeo (negativa)
+
+Validação de viabilidade de espaço comparando com apps reais: um player de
+música típico usa o padrão alça (`≡`) isolada à esquerda + ícone pequeno
+quadrado + bloco de texto em duas linhas (título + artista) + menu de três
+pontos à direita — estrutura muito próxima do que este app precisa. Com a
+correção do conflito de gestos (menu de três pontos por item removido,
+substituído pelo gesto de pressionar-e-segurar), o espaço que seria do menu
+fica livre para o valor, no mesmo canto direito. Contagem de elementos
+fica equivalente: alça + checkbox + ícone + texto (2 linhas) + valor, muito
+próxima da referência do player de música (alça + ícone + texto (2 linhas)
++ menu). Conclusão: o layout proposto é viável na largura de tela vertical
+de celular, desde que checkbox e ícone fiquem visualmente agrupados como
+um bloco compacto (não espalhados).
+
+Referência negativa: apps de playlist de vídeo (ex: YouTube) usam thumbnail
+grande e retangular por item — esse padrão **não se aplica aqui**, pois
+ocuparia espaço excessivo sem espaço equivalente para descrição e valor.
+A referência a seguir é a densidade do player de música, não a de listas
+de vídeo com thumbnail.
 
 O valor ganha destaque não por ocupar mais espaço físico, mas por ficar
 isolado na própria coluna com maior peso de fonte — segue o padrão de

@@ -176,22 +176,39 @@ não resolvido que bloqueia tudo que vem depois.
   automaticamente — sem necessidade de refazer a soma manualmente ao editar
   uma fonte
 - Saldo remanescente ao fim de um período deve transitar automaticamente
-  para o próximo. **Correção de arquitetura em relação a uma versão anterior
-  deste documento:** o saldo final de cada período deve ser armazenado
-  (cached), não recalculado do zero a cada leitura — caso contrário, exibir
-  um período recente exigiria recalcular toda a cadeia de períodos anteriores
-  desde o início, o que é inviável em performance conforme o histórico cresce.
-  Em vez disso, quando a edição de um item muda o saldo final de um período,
-  o app deve **recalcular em cascata, avançando período por período** —
-  período N+1 usa o novo valor de N, recalcula seu próprio saldo final,
-  dispara a atualização de N+2, e assim por diante até o período mais recente
-  existente. Cada passo é simples (O(1)); a cadeia inteira é uma caminhada
-  linear, não recursiva/exponencial — recalcular décadas de períodos em
-  sequência é trivial computacionalmente. Essa cascata deve rodar como
-  operação em background (ver WorkManager, já previsto no roadmap para
-  trabalho assíncrono), sem bloquear a interface enquanto propaga — o usuário
-  edita um item antigo, a cascata roda silenciosamente, e os períodos
-  seguintes são atualizados sem travar o app
+  para o próximo. O saldo final de cada período é armazenado (cached), não
+  recalculado do zero a cada leitura.
+
+### Correção final: edição retroativa que altera saldo final é rara — solução proporcional
+Duas versões anteriores deste documento propuseram soluções desproporcionais
+para esse problema (bloqueio de período, depois cache com cascata assíncrona
+em background). Análise mais realista do padrão de uso real:
+
+**A frequência real de edição retroativa que altera o saldo final de um
+período passado é extremamente baixa — quase inexistente.** O app é espelho
+fiel do saldo real no banco, não uma ficção paralela. Se o saldo de um
+período diverge do que está no banco, a correção acontece na hora ou, no
+máximo, durante o período seguinte — nunca meses ou anos depois. O único
+cenário plausível de precisar editar vários períodos em sequência é o
+usuário ter ficado tempo sem usar o app (nesse caso, ele também não estaria
+criando novos períodos — o problema se resolve retomando o uso a partir de
+onde parou, período a período, não editando retroativamente uma cadeia
+longa já fechada).
+
+Dado isso, a solução correta é simples e proporcional:
+- **Edição/inclusão retroativa que não altera o saldo final do período**
+  (ex: registrar uma transação de custódia que entrou e saiu sem afetar o
+  saldo) é **totalmente livre**, sem qualquer aviso ou recálculo — não
+  dispara nada, porque nada precisa ser propagado
+- **Edição que efetivamente altera o saldo final de um período que já tem
+  períodos posteriores existentes** dispara um aviso explícito ("esta
+  alteração vai atualizar o saldo de N períodos seguintes — continuar?"),
+  e o recálculo em cascata é feito de forma **síncrona**, no momento da
+  confirmação — sem necessidade de infraestrutura de propagação assíncrona
+  em background, porque o evento é raro o suficiente para não precisar ser
+  instantâneo ou invisível
+- Nenhum bloqueio de edição é necessário — a proteção contra erro acidental
+  vem do aviso explícito antes de confirmar, não de impedir a ação
 
 ### Fluxo: múltiplas cascatas independentes dentro do mesmo período
 Nas anotações reais, um período pode ter mais de uma cascata de subtração
@@ -209,19 +226,40 @@ Navegação decorrente: o usuário entra no Período, vê a lista de Fluxos
 existentes (geralmente apenas um), escolhe um, e vê a lista de itens daquele
 Fluxo específico, com saldo próprio.
 
-### Período fechado para edição: não implementar bloqueio
-Editar um item de um período antigo pode alterar seu saldo final, que por
-sua vez afeta o saldo remanescente do período seguinte. Um mecanismo de
-"fechar período para edição" foi considerado, mas não é recomendado: um
-bloqueio rígido contradiz o princípio de flexibilidade já estabelecido
-(edição retroativa é permitida, nada é travado — ver seção acima). A solução
-adotada é arquitetural, não uma trava de UI: saldo remanescente como
-referência viva (ver acima) elimina o risco de dado desatualizado na raiz,
-sem necessidade de lock.
+### Período fechado para edição: trava suave de confirmação de intenção
+Correção final: um mecanismo de "fechar período" **é recomendado**, mas com
+motivação diferente da inicialmente considerada (proteger contra cascata
+de recálculo — descartada por ser evento raro, ver seção 2). A motivação
+real e válida é **prevenir edição por engano de navegação**: no bloco de
+notas já ocorreu o usuário editar o período errado por confusão ao rolar o
+texto; no app, um risco análogo existe (editar pensando estar num período
+recente, mas estar navegando em um antigo por engano). Um período "fechado"
+exige uma ação deliberada de **reabrir** antes de qualquer edição — não é
+bloqueio permanente, é uma confirmação de intenção extra para editar algo
+antigo, sem contradizer o princípio de flexibilidade (nada é impedido, só
+exige um passo consciente adicional).
 
-Se o usuário quiser uma sensação de "conferido" por tranquilidade pessoal,
-uma flag simples e não-bloqueante (`revisado: true/false`) pode ser oferecida
-— funciona como um bookmark pessoal, sem impedir nenhuma edição futura.
+Uma flag simples (`fechado: true/false`) é suficiente para representar
+isso — sem necessidade de lógica complexa de permissão, só um estado que a
+UI usa para exigir a confirmação de reabertura antes de permitir edição.
+
+### Modo de edição em lote: evitar recálculo prematuro em mudanças relacionadas
+Ao fazer múltiplas mudanças relacionadas entre si num período (ex: registrar
+um depósito retroativo e, na mesma sessão, registrar o uso integral desse
+valor), recalcular o saldo a cada mudança individual é trabalho desnecessário
+— o estado intermediário entre as mudanças não é o que o usuário quer que
+"valha" como resultado final. Solução: entrar em um **modo de edição** pausa
+o recálculo automático enquanto o usuário faz as alterações necessárias; o
+recálculo (e o aviso de cascata, se o saldo final mudar — ver seção 2) só é
+disparado uma única vez, ao confirmar a saída do modo de edição, sobre o
+resultado agregado de todas as mudanças feitas na sessão.
+
+Essa opção fica disponível em **qualquer período, incluindo o atual** — o
+benefício de evitar recálculo redundante não é exclusivo de períodos antigos.
+A única diferença entre editar o período atual e um período fechado é a
+exigência extra de reabertura deliberada (ver acima) antes de poder editar;
+uma vez em condição editável (por já estar aberto, ou por ter sido reaberto),
+o modo de edição em lote funciona da mesma forma nos dois casos.
 
 ---
 
@@ -270,7 +308,16 @@ saldo remanescente.
   um conceito independente da data do item — vive em estrutura própria
   (ver seção 11), não é derivado do campo de data do item em si
 - Menu de contexto por item com opções: editar, excluir, inserir acima,
-  inserir abaixo
+  inserir abaixo — ativado por **pressionar e segurar** em qualquer parte
+  do item. Esse gesto ficou livre após a correção do conflito de gestos
+  (reorder passou para uma alça dedicada, seleção múltipla passou a ser
+  ativada por menu — ver abaixo), evitando a necessidade de um ícone
+  adicional de "três pontos" por item, que competiria por espaço já
+  limitado na linha
+- A opção "Editar" do menu de contexto é um atalho equivalente a abrir o
+  modal/tela de detalhe do item (toque simples) já em modo de edição —
+  não é um caminho concorrente, é apenas mais direto. Ambos os caminhos
+  levam ao mesmo lugar
 - Um item pode ter estado **"ignorado"**: fica visível na lista mas não entra
   no cálculo do saldo. Substitui o padrão de "comentar" gastos com `***` ou
   `/* ... */` nas anotações
@@ -352,15 +399,41 @@ Tags (definidas acima) não precisam ocupar espaço na linha principal do
 item — são metadado para filtro e relatório, não informação de leitura
 rápida obrigatória.
 
-### Ponto de atenção: conflito potencial entre gestos de interação
-Dois comportamentos distintos foram planejados usando possivelmente o mesmo
-gesto de "pressionar e segurar": o checkbox de status (pendente/realizado)
-e a seleção múltipla de itens para somar (seção 12). Se ambos usarem o mesmo
-gesto, há ambiguidade de interação. Recomendação a validar no design: o
-checkbox de status deve ser ativado por toque simples e estar sempre
-visível; o modo de seleção múltipla (ativado por pressionar e segurar) deve
-ter um indicador visual diferente, evitando que o usuário confunda os dois
-comportamentos.
+### Correção: conflito de gestos era entre reordenar e seleção múltipla, não checkbox
+Correção de um ponto anterior deste documento: o conflito real de gestos
+não envolvia o checkbox de status (que sempre foi toque simples, sem
+ambiguidade). O conflito genuíno era entre **reordenar itens (drag and
+drop)** e **ativar seleção múltipla para somar/subtrair (seção 12)** — ambos
+poderiam usar "pressionar e segurar" como gesto, gerando ambiguidade sobre
+qual comportamento seria disparado.
+
+Resolução adotada: cada comportamento tem seu próprio disparador, eliminando
+a ambiguidade:
+- **Checkbox** → toque simples, sempre visível (sem mudança)
+- **Reordenar** → gesto de arrastar localizado numa **alça dedicada** (ícone
+  específico, ex: duas linhas horizontais, padrão comum em listas
+  reordenáveis), não em qualquer ponto do item. Isso também previne
+  reordenação acidental ao tocar em outras partes do item
+- **Seleção para somar/subtrair (seção 12)** → ativada por opção de menu
+  (ex: ícone de três pontos no canto da tela, com opções "Somar itens" /
+  "Subtrair itens"), não mais por pressionar e segurar. Uma vez ativo o
+  modo, toque simples em cada item o adiciona à seleção, na ordem em que
+  foram tocados
+- Toque em qualquer outra parte do item (fora da alça e fora do checkbox,
+  com o modo de seleção desativado) abre o detalhe do item (modal/tela)
+- **Pressionar e segurar** em qualquer parte do item (gesto que ficou livre
+  após essa correção) abre o menu de contexto do item (editar, excluir,
+  inserir acima/abaixo — ver requisito no início desta seção). Isso evita
+  a necessidade de um ícone dedicado de "três pontos" por item, poupando
+  espaço na linha
+
+Resumo final dos gestos, sem sobreposição:
+- Toque simples no checkbox → marca/desmarca
+- Toque simples no restante do item → abre detalhe (modal/tela)
+- Arrastar pela alça → reordena
+- Pressionar e segurar em qualquer parte do item → abre menu de contexto
+- Toque simples nos itens, com modo de seleção ativo (ativado via menu
+  superior) → seleciona para somar/subtrair
 
 ### Saldo do período: a cascata é o instrumento central de planejamento
 O saldo projetado após cada item **não é informação secundária de
@@ -865,15 +938,19 @@ fora desse contexto.
 ## 12. Seleção e soma de itens
 
 ### Requisito
-- Na lista de itens de um período, pressionar e segurar um item ativa modo de
-  seleção múltipla
-- Com múltiplos itens selecionados, exibir a soma dos valores selecionados
+- O modo de seleção múltipla é ativado via **opção de menu** (ex: ícone de
+  três pontos, com opções "Somar itens" / "Subtrair itens"), não por
+  pressionar e segurar — ver correção do conflito de gestos na seção 3
+- Uma vez o modo ativo, toque simples em cada item o adiciona à seleção, na
+  ordem em que foram tocados
+- Com múltiplos itens selecionados, exibir a soma (ou diferença, conforme o
+  modo escolhido) dos valores selecionados
 - Exibir também a diferença entre dois itens selecionados quando exatamente
-  dois estiverem selecionados
+  dois estiverem selecionados, independente do modo escolhido
 - Resultado exibido em destaque na tela (ex: popup ou barra fixa no topo,
   abaixo do menu superior)
-- A parte esquerda de cada item na lista é reservada para drag and drop
-  (reorganização); o restante é a área descritiva e de interação
+- Reordenação de itens (drag and drop) usa uma **alça dedicada** (ícone
+  específico na lateral do item), não o item como um todo — ver seção 3
 
 ---
 
