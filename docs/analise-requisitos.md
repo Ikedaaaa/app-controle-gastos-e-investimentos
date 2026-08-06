@@ -273,7 +273,7 @@ saldo remanescente.
 
 ### Requisitos
 - Lista de itens de gasto/alocação ordenável e editável
-- Cada item tem: descrição, valor, categoria, data, estado (previsto/realizado)
+- Cada item tem: descrição, valor, categoria, data, estado (pendente/realizado)
   e campo de nota opcional
 - A descrição é texto completamente livre — sem validação de formato, sem
   categoria obrigatória. O usuário precisa poder escrever qualquer coisa,
@@ -331,7 +331,20 @@ saldo remanescente.
   fixa — o usuário cria tags livremente, na mesma filosofia de flexibilidade
   já adotada para descrição e notas
 - Gastos recorrentes são pré-carregados no início de cada período com seus
-  valores padrão, editáveis antes de confirmar
+  valores padrão, editáveis antes de confirmar. **Ancoragem por data, não
+  por tipo de período:** um gasto recorrente é configurado com um dia
+  habitual do mês (ex: dia 12 para a conta de luz, dia 20 para a internet),
+  não vinculado a um tipo específico de período (quinzenal/mensal). Ao gerar
+  as sugestões de um novo Período, o app verifica quais recorrentes têm seu
+  dia habitual dentro do intervalo de datas daquele Período e os sugere
+  automaticamente. Isso garante que a recorrência continue funcionando
+  corretamente mesmo se o tipo de período mudar de um mês para outro (ex:
+  internet configurada para dia 20 aparece na segunda quinzena se o mês for
+  quinzenal, ou no único período do mês se for mensal — sem precisar
+  reconfigurar o recorrente). Inteligência de ajuste para fim de
+  semana/feriado (mover para o próximo dia útil) não é necessária agora —
+  o usuário pode editar a data manualmente quando precisar; fica registrado
+  como possibilidade futura
 - Gastos com valor variável são pré-carregados com o valor do mês anterior
   como sugestão
 - Estado por item: **pendente** ou **realizado** (checkbox). Substitui o `*`
@@ -484,6 +497,152 @@ anotações antes de abandonar por ser trabalhoso demais:
 - Total de Gasto, Acúmulo, Investido e Total Geral — tanto **Previsto**
   quanto **Realizado** (refletindo a distinção já documentada na seção 2
   para fontes de entrada — aqui aplicada aos gastos do período)
+
+**Correção sobre a definição do cálculo "Previsto":** definir Previsto como
+soma apenas dos itens `pendente` tem um defeito — o valor degradaria para
+zero conforme os itens fossem marcados como `realizado` ao longo do período,
+perdendo a informação "o que eu tinha planejado". Definição corrigida:
+
+**Total Previsto (por categoria) = soma de todos os itens da categoria,
+independente do estado (pendente ou realizado), excluindo apenas os itens
+"ignorados".** Total Realizado continua sendo a soma apenas dos itens
+marcados como realizado. Com essa definição, marcar um item como realizado
+não o remove do total previsto — ele continua contando (porque fazia parte
+do plano) e passa a contar também no realizado. Se tudo que foi planejado
+for cumprido, Previsto e Realizado convergem para o mesmo valor ao final do
+período — comportamento correto de um planejamento bem-sucedido, sem "zerar"
+no meio do caminho.
+
+Isso deriva automaticamente os cenários comuns:
+- Uma compra não planejada (ex: impulso numa promoção), se adicionada e
+  marcada como `realizado` na hora, passa a contar tanto em Previsto quanto
+  em Realizado a partir do momento em que é criada — reflete corretamente
+  que ela virou parte do plano (mesmo que retroativamente) no momento em
+  que foi registrada
+- Um gasto futuro genuinamente planejado (ex: uma compra específica marcada
+  para uma data futura) conta em Previsto assim que é adicionado como item
+  `pendente`, mesmo sem ser recorrente — correto, porque o usuário de fato
+  pretende gastar aquele valor
+- A fatura do período (categoria Fatura) entra em Previsto pelo mesmo
+  mecanismo, sem tratamento especial
+
+**Simulação sem compromisso:** se o usuário quer apenas especular ("e se eu
+comprasse isso?") sem assumir o plano, o item não deve ser adicionado ao
+Fluxo — a simulação usa a calculadora embutida (seção 16) ou a visão de
+saldo em cascata (seção 3) mentalmente, sem criar um item real que afetaria
+os totais previstos.
+
+### Snapshot de "Previsto Inicial": exceção deliberada ao princípio de não duplicar dados
+Mesmo com a correção acima, "Previsto" continua sendo um valor **vivo** —
+editar o valor de um item recorrente no meio do período atualiza o total
+retroativamente, perdendo a capacidade de responder "quanto eu tinha
+comprometido no dia em que criei este período, antes de qualquer ajuste".
+Isso não pode ser resolvido com um cálculo derivado; exige um snapshot
+(cópia congelada, tirada num momento específico).
+
+**Esta é uma exceção deliberada e reconhecida ao princípio geral de nunca
+duplicar dados** (que guia o restante deste documento). A diferença: aqui
+o propósito da cópia é justamente ser um registro histórico imutável — não
+uma fonte de verdade viva que poderia divergir por acidente. É o mesmo
+padrão usado por qualquer app de orçamento pessoal ("planejado no início do
+mês" vs. "gasto real", comparados lado a lado).
+
+Proposta: ao criar o Período, capturar um snapshot imutável de
+`previsto_inicial` por categoria, no momento da criação (tipicamente,
+refletindo os gastos recorrentes pré-carregados naquele instante). Esse
+valor nunca é recalculado depois. O "Previsto" vivo (definição corrigida
+acima) continua existindo em paralelo para uso corrente durante o período.
+Os dois coexistem com propósitos diferentes: um para planejamento em tempo
+real, outro para comparação histórica "planejado vs. realizado" ao final.
+
+Exibição: no Quadro de Resumo (início desta seção), cada categoria pode
+exibir três valores lado a lado — `Planejado inicialmente (snapshot) |
+Realizado | Previsto (vivo, atual)` — respondendo visualmente "onde comecei,
+onde estou agora de fato (realizado), onde planejo chegar (previsto)". Ordem
+sugerida com Realizado antes de Previsto (já que Previsto ≥ Realizado
+sempre); ajustável livremente no design de UI conforme preferência de
+leitura.
+
+### Rastreamento de origem recorrente: cópia no momento da criação, não FK viva
+Em vez de criar uma nova categoria de gasto ("Recorrente") e em vez de uma
+FK obrigatória do item para a definição do Recorrente (que impediria excluir
+o Recorrente sem quebrar itens já criados, ou exigiria cascade delete
+destrutivo), a abordagem correta é: ao criar um novo Período, o app lê as
+definições de Recorrente vigentes e **cria uma cópia independente** de cada
+uma como Item novo no Fluxo (descrição, valor e categoria copiados naquele
+momento). O item resultante tem um campo opcional `origem_recorrente_id`,
+que é apenas uma **referência histórica**, não uma dependência estrutural
+— útil para relatório e para sugerir valor em períodos futuros, mas se a
+definição do Recorrente for excluída ou desativada depois, os itens já
+materializados em períodos passados permanecem intactos (são cópias, não
+vínculos vivos). Mesmo princípio de snapshot imutável já aplicado ao
+`previsto_inicial` acima, agora aplicado ao próprio item recorrente.
+
+Isso permite calcular **Total Recorrente** = soma dos itens com essa
+referência preenchida, sem precisar de categoria dedicada. Itens adicionados
+manualmente (ex: uma compra planejada para uma data futura, sem ser
+recorrente) não têm essa referência — contam em Previsto normalmente, mas
+não em Total Recorrente.
+
+**Consequência direta:** no momento da criação do Período, antes de qualquer
+adição manual, `Previsto == Total Recorrente` (tudo que existe até então
+veio dos recorrentes pré-carregados). Conforme itens planejados não
+recorrentes são adicionados, Previsto passa a superar Total Recorrente —
+comportamento esperado.
+
+### Fatura como recorrente: valor sempre derivado, nunca fixo ou congelado
+O recorrente de fatura é uma exceção ao padrão dos demais recorrentes. Os
+outros recorrentes materializam como cópia independente com valor fixado
+no momento da criação (ver acima). A fatura não pode seguir esse padrão,
+porque seu valor precisa continuar vivo até o fechamento real — novas
+compras no crédito podem ser adicionadas a ela em qualquer momento antes de
+o cartão fechar.
+
+Isso já decorre naturalmente do que a seção 9 estabelece: toda compra no
+crédito, ao ser registrada, já sabe a qual fatura pertence (baseado na data
+da compra e nas datas de fechamento/vencimento do cartão). Portanto, o valor
+da fatura **não precisa de nenhuma inteligência de cálculo especial** — é
+simplesmente a soma corrente de todas as compras já vinculadas a ela, a
+qualquer momento. O "recorrente de fatura" apenas garante que o item Fatura
+apareça automaticamente no novo período, com esse valor derivado (nunca
+fixo) — diferente dos demais recorrentes, que fixam um valor no momento da
+criação.
+
+### Excluir e desativar Recorrente: dois caminhos independentes, ambos seguros
+Como os itens materializados a partir de um Recorrente são cópias
+independentes (não vínculos vivos via FK, ver acima), **tanto excluir quanto
+desativar a definição do Recorrente são seguros** — nenhum dos dois afeta
+itens já criados em períodos passados, porque o histórico não depende da
+definição original continuar existindo ou estar ativa.
+
+Os dois caminhos resolvem necessidades diferentes e coexistem:
+- **Desativar** (`ativo: true/false`) — pausa reversível, mantendo toda a
+  configuração já refinada (nota, tags, vínculo com caixinha específica,
+  valor ajustado ao longo do tempo). Ideal para vigência temporária com
+  intenção clara de retomar (ex: pausar por alguns meses e reativar depois)
+  sem precisar reconfigurar tudo do zero
+- **Excluir** — remoção definitiva, para recorrentes que genuinamente não
+  fazem mais sentido
+
+A preocupação de poluir a tela de gestão com recorrentes inativos se resolve
+por **filtro de visualização** (mostrar apenas ativos por padrão, com opção
+de alternar para ver os inativos), não por forçar exclusão. Os dois recursos
+não são mutuamente exclusivos.
+
+### Recorrência de renda (salário, adiantamento) exige tratamento diferente de recorrência de gasto
+Gastos e investimentos recorrentes materializam seu item no próprio Período
+cuja data de ocorrência pertence ao seu intervalo. **Fontes de renda
+recorrente (salário, adiantamento) não seguem essa regra** — como já
+documentado na seção 1, o salário recebido no fim de um mês financia a
+primeira quinzena do mês seguinte, não o período em que a data de
+recebimento cai.
+
+Por isso, a definição de um Recorrente de renda precisa de um campo
+adicional de **deslocamento de período de destino** (ex: "materializa como
+entrada do próximo Período", em vez de "materializa no Período que contém
+a data"). Isso é uma categoria de recorrência distinta da recorrência de
+gasto/investimento, e deve ser tratada como tal na modelagem — não é uma
+variação do mesmo mecanismo, é uma regra de destino diferente.
 - Total no Crédito — soma das **compras feitas no crédito durante o período**
   (novo endividamento gerado agora), não o valor da fatura a pagar. São
   conceitos diferentes: a fatura do período pode incluir parcelas de compras
@@ -715,8 +874,10 @@ todo o histórico.
   da conta corrente
 - O app calcula automaticamente quanto falta complementar após os resgates
 - A fatura pode ter uma parte de terceiro vinculada à carteira do terceiro
-- Suporte a ajuste manual de valor entre faturas: caso de estorno após
-  fechamento que reduz a fatura atual e aumenta a seguinte
+- Suporte a créditos e débitos mistos numa mesma fatura: caso de estorno de
+  compra parcelada após fechamento, onde o valor final é sempre derivado
+  automaticamente da soma dos itens da fatura (créditos e débitos) — nunca
+  editado manualmente como um ajuste solto (ver detalhamento abaixo)
 
 ### Observação de comportamento real
 Compras parceladas do cartão têm o número de parcela rastreado manualmente
@@ -912,7 +1073,11 @@ carteira de um terceiro tinha múltiplos depósitos ativos simultaneamente.
   todo novo período como sugestão (não como obrigação)
 - Tipos de recorrência: mensal, quinzenal, por período específico
 - Um gasto recorrente tem valor padrão editável antes de confirmar no período
-- Estado do gasto: previsto (agendado, ainda não pago) ou realizado (pago)
+- Estado do gasto: pendente (agendado, ainda não pago) ou realizado (pago).
+  Correção terminológica: o estado do item é sempre "pendente/realizado" —
+  "previsto" é reservado para o conceito de agregação no painel analítico
+  (seção 4: soma de itens pendentes por categoria), não para o estado de
+  um item individual (ver seção 3)
 - Gastos previstos com data futura podem gerar notificação push no dia do
   vencimento
 - Notificação de vencimento de ativo de renda fixa: quando um aporte tem
@@ -988,7 +1153,7 @@ Identificados como necessários para superar a limitação do bloco de notas:
 
 ---
 
-## Considerações de arquitetura para suporte futuro a múltiplos usuários
+## 16. Considerações de arquitetura para suporte futuro a múltiplos usuários
 
 Registrado das anotações brutas originais: mesmo sendo um app de uso pessoal
 exclusivo, vale desenhar o banco de dados pensando em não fechar a porta para
@@ -1008,7 +1173,7 @@ múltiplos usuários no futuro, caso o projeto evolua nessa direção.
 
 ---
 
-## Funcionalidades mapeadas para versões futuras (fora do escopo atual)
+## 17. Funcionalidades mapeadas para versões futuras (fora do escopo atual)
 
 - Módulo completo de renda variável: registro de ordens de compra e venda
   de ações, FIIs e criptomoedas com carteira de ativos no app. Quando o
@@ -1033,7 +1198,7 @@ múltiplos usuários no futuro, caso o projeto evolua nessa direção.
 
 ---
 
-## 16. Calculadora embutida
+## 18. Calculadora embutida
 
 ### Requisito
 - Calculadora acessível de qualquer tela do app, sem sair do contexto atual
@@ -1051,7 +1216,7 @@ de cálculo de rendimento mencionado na seção 7.
 
 ---
 
-## 16.1 Busca de investimento por carteira (pós-MVP)
+## 19. Busca de investimento por carteira (pós-MVP)
 
 ### Requisito
 Permitir buscar um ativo ou aporte específico e ver a qual Carteira ele
@@ -1062,7 +1227,7 @@ precisa localizar rapidamente onde um investimento específico está alocado.
 
 ---
 
-## 17. Bloqueio de acesso ao app (MVP) vs. autenticação real (futuro)
+## 20. Bloqueio de acesso ao app (MVP) vs. autenticação real (futuro)
 
 ### Decisão
 Login completo (conta, autenticação, backend) não faz sentido no MVP — não
@@ -1080,7 +1245,7 @@ segurança, quando o backend existir.
 
 ---
 
-## 18. Carteiras com composição mista (renda fixa e renda variável) — pós-MVP
+## 21. Carteiras com composição mista (renda fixa e renda variável) — pós-MVP
 
 ### Conceito
 O objetivo de uma carteira (prazo, necessidade de liquidez) é o que define
@@ -1211,7 +1376,7 @@ conferência contra o extrato real.
 
 ---
 
-## 19. Estratégia de dados offline/online — pós-MVP (depende da Phase 12 do roadmap)
+## 22. Estratégia de dados offline/online — pós-MVP (depende da Phase 12 do roadmap)
 
 ### Contexto
 No MVP tudo é local (Room), offline-only. Quando o backend e a sincronização
@@ -1283,7 +1448,7 @@ bloco de notas. Com base nas notas reais, o mínimo necessário é:
 - Notificações
 - Múltiplos cartões com fechamento/vencimento automático
 - Parcelamento automático de crédito
-- Ajuste manual de valor entre faturas (caso de estorno)
+- Suporte completo a créditos/débitos mistos em fatura por estorno (caso raro)
 - Gráficos e análise
 - Exportação PDF
 - Carteiras de terceiros como feature formal
