@@ -27,6 +27,32 @@ usuários, dados de suporte ou concorrência real a vencer.
 
 Execute em ordem — cada prompt lê a saída do anterior.
 
+## Checklist de execução
+
+Marque conforme for concluindo. Para o prompt `08`, marque as sub-etapas
+conforme o mapa de sessões definido dentro do próprio arquivo.
+
+- [ ] `01-setup.md`
+- [ ] `02-panorama-solucoes-existentes.md`
+- [ ] `03-persona.md`
+  - [ ] Coleta de mensagens brutas em `reference-files/discovery/persona-mensagens-brutas.md`
+  - [ ] Persona gerada
+- [ ] `04-problema-e-hmw.md`
+- [ ] `05-oportunidades-ia.md`
+- [ ] `06-ideacao-e-priorizacao.md`
+  - [ ] Alternativas geradas
+  - [ ] Priorização feita
+- [ ] `07-persona-roleplay.md`
+  - [ ] Role-play executado
+  - [ ] Conclusões objetivas extraídas para `docs/discovery/05-conclusoes-roleplay.md`
+- [ ] `08-construir-prototipo.md`
+  - [ ] Sessão 1 — requirements.md
+  - [ ] Sessão 1 — design.md (arquitetura compartilhada + Versão A)
+  - [ ] Sessão 1 — tasks.md (setup + Versão A) executadas
+  - [ ] Sessão 2 (chat novo) — design.md (Versão B)
+  - [ ] Sessão 2 — tasks.md (Versão B) executadas
+  - [ ] Comparação final (`prototype/COMPARACAO.md`)
+
 ## Onde os artefatos são salvos, e o que é versionado
 
 | Artefato | Local | Versionado? |
