@@ -49,6 +49,10 @@ Toda a análise e planejamento deste projeto está documentada em [`docs/`](docs
 
 Os dados financeiros reais que originaram esta análise (anotações mensais pessoais) não são versionados neste repositório por conterem informações sensíveis.
 
+## Metodologia de refinamento
+
+A pasta [`prompts/`](prompts/) contém uma sequência estruturada de prompts para refinar decisões de UI/UX ainda abertas e construir um protótipo navegável, adaptada da metodologia usada no treinamento "AI Accelerator" (mantido como referência, intocado, em `reference-files/ai-accelerator-training/`). Ver [`prompts/README.md`](prompts/README.md) para a ordem de execução e o que difere da metodologia original.
+
 ## Stack planejada
 
 - **Mobile:** Kotlin + Jetpack Compose (Android nativo)
@@ -80,3 +84,5 @@ Notificações, múltiplos cartões com automação completa, gráficos, exporta
 Este é um projeto pessoal e também um projeto de estudo — aprendizado de Kotlin, arquitetura Android moderna, Spring Boot e sincronização offline-first, aplicados a um problema financeiro real que eu mesmo tenho.
 
 A fase de levantamento de requisitos foi conduzida em conjunto com IA (Kiro), a partir da análise de anos de anotações financeiras reais — não é um app genérico gerado por um prompt único, mas o resultado de várias sessões de discussão, questionamento e refinamento de cada decisão de modelagem. O histórico completo desse processo está refletido no nível de detalhe dos documentos em [`docs/`](docs/).
+
+O refinamento das decisões de UI e a construção do protótipo seguem uma metodologia própria, adaptada de um treinamento corporativo de ideação com IA — ver [`prompts/`](prompts/).
