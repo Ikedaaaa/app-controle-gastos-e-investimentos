@@ -168,6 +168,64 @@ dentro da visão de uma carteira, para identificação visual rápida de onde
 cada aporte está custodiado (ex: dentro da carteira do exemplo, um depósito
 com ícone do Banco A, outros dois com ícone do Banco B).
 
+## Máscara de digitação para campos de valor monetário
+
+Padrão comum em apps bancários: o campo de valor começa
+com máscara `0,00` e o preenchimento acontece da direita para a esquerda —
+cada novo dígito digitado empurra os anteriores, sem o usuário precisar
+posicionar cursor ou digitar a vírgula manualmente.
+
+Exemplo de sequência ao digitar `12345` para representar R$ 123,45:
+
+```
+digita 1 → 0,01
+digita 2 → 0,12
+digita 3 → 1,23
+digita 4 → 12,34
+digita 5 → 123,45
+```
+
+Vantagens: elimina erro de posicionamento de vírgula/ponto decimal, é rápido
+de operar com uma mão (relevante para um app que será aberto com frequência
+para lançar gastos pontuais), e casa naturalmente com a decisão de
+armazenamento em centavos inteiros (seção 23 do `analise-requisitos.md`) —
+a lógica de "cada dígito novo empurra os anteriores" opera sobre um inteiro
+de centavos internamente, sem precisar lidar com ponto flutuante durante a
+digitação.
+
+Aplicável a todo campo de valor monetário do app (item do fluxo, aporte,
+resgate, etc.) — não é específico de uma tela.
+
+## Tela inicial / o que aparece ao abrir o app
+
+Ponto em aberto, ainda sem inclinação clara: o que o usuário vê no primeiro
+instante ao abrir o app.
+
+Hipóteses consideradas, nenhuma decidida:
+
+- **Abrir direto no Período atual**, já posicionado no mês/quinzena vigente,
+  com navegação em carrossel para os lados (meses/períodos anteriores à
+  esquerda, seguindo o que já está descrito em `analise-requisitos.md` seção
+  1). Essa opção reaproveita o painel analítico que cada Período já tem
+  (seção 4) como uma forma de "resumo do agora" — não é dashboard geral, é
+  o resumo do período corrente, que já está no escopo do MVP
+- **Tela de patrimônio/dashboard consolidado** como ponto de entrada, com
+  gráficos e visão geral antes de entrar em qualquer período. Provavelmente
+  **não é MVP**: a tela de patrimônio consolidado com gráfico de composição
+  está descrita na seção 21 do `analise-requisitos.md`, mas depende do
+  módulo de investimentos e está listada como pós-MVP; gráficos em geral
+  também estão na seção 15, igualmente pós-MVP. Abrir o app nessa tela no
+  MVP entraria em conflito com o que já foi decidido como fora de escopo
+- **Alguma combinação das duas** — ex.: abrir no Período atual, com um
+  atalho/aba de fácil acesso para uma versão simplificada de patrimônio
+  (sem gráfico, só números totais das carteiras), sem esperar o módulo de
+  investimentos completo
+
+Nenhuma das três foi testada ou escolhida. Este é um dos pontos que deveria
+entrar na lista de pontos abertos ao rodar os prompts de refinamento (ver
+`prompts/01-setup.md` e `prompts/04-problema-e-hmw.md`), e vale comparar
+diretamente entre as duas versões do protótipo (`prompts/08-construir-prototipo.md`).
+
 ## Comportamento de gráficos em tela pequena
 
 - Pensar no comportamento de rolagem vs. troca de tela quando um gráfico

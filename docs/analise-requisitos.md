@@ -1430,6 +1430,70 @@ do roadmap) for desenhada. Registrado aqui para não perder o raciocínio.
 
 ---
 
+## 23. Tipo de dado para valores monetários e taxas
+
+### Decisão
+Nenhum valor monetário é armazenado como `Float` ou `Double`. Tipos de ponto
+flutuante não representam fração decimal de forma exata em binário (ex:
+`0.10 + 0.20` resulta em `0.30000000000000004` em praticamente qualquer
+linguagem) — inaceitável para um sistema que faz cálculo em cascata
+repetido sobre os mesmos valores (seção 3).
+
+A regra é por **natureza do dado**, não por entidade — todo campo do schema
+se encaixa em uma das duas categorias, sem exceção:
+
+- **Valor monetário** (quantia em reais: valor de item do fluxo, valor de
+  aporte, valor de carteira, saldo, valor de fonte de renda) → armazenado
+  como **inteiro em centavos** (`Long`). R$ 123,45 é armazenado como
+  `12345`. Nunca como decimal, nem para carteiras/aportes — o fato de um
+  valor pertencer a uma carteira de investimento não muda sua natureza de
+  "quantia em dinheiro"
+- **Taxa ou percentual** (% CDI, IPCA+X%, taxa prefixada) → armazenado como
+  `BigDecimal`. Taxa nunca foi uma quantia em dinheiro, é um número
+  fracionário por definição — não se beneficia nem precisa da representação
+  em centavos
+
+Esta é uma regra universal e binária por campo ("é quantia em dinheiro, ou é
+taxa?"), evitando a ambiguidade de decidir tipo por tabela/entidade — o que
+exigiria lembrar excepcionalmente que um campo específico de uma entidade
+específica é diferente dos demais.
+
+### Cálculo automático de juros compostos (pós-MVP, ver seção 7): a
+### precisão decimal vive no cálculo, não no armazenamento
+O armazenamento em centavos inteiros não impede o cálculo de juros
+compostos previsto para versão futura. A conversão para precisão decimal
+acontece na camada de cálculo, não na de armazenamento:
+
+1. Lê o valor armazenado em centavos (`Long`)
+2. Converte para `BigDecimal` dividindo por 100 — exato, sem perda, porque
+   parte de um inteiro (diferente de converter a partir de `Double`, que já
+   carregaria erro de representação)
+3. Executa o cálculo (juros compostos, rateio) em `BigDecimal`, com a taxa
+   (já `BigDecimal`) na precisão necessária durante os passos intermediários
+4. Arredonda o resultado final de volta para centavos inteiros antes de
+   salvar ou exibir, usando modo de arredondamento explícito —
+   `HALF_EVEN` ("arredondamento bancário") é o padrão usado em sistemas
+   financeiros para reduzir viés sistemático que arredondamento simples
+   (sempre para cima, ou sempre para baixo) acumularia ao longo de muitas
+   operações repetidas
+
+Consequência prática: o schema nunca fica ambíguo sobre "este valor está em
+reais ou em centavos?" — a resposta é sempre centavos, para todo campo
+monetário, em toda tabela. A precisão decimal aparece só transitoriamente
+durante um cálculo específico, nunca no dado persistido.
+
+### Rateio e "penny rounding"
+Sempre que um valor monetário for dividido entre partes (rateio de fatura
+entre "minha parte" e "parte do terceiro", seção 10; distribuição de
+resgate entre múltiplos itens desconhecidos, seção 10), o arredondamento de
+cada parte deve garantir que a soma das partes arredondadas seja
+exatamente igual ao total original — nunca sobrando ou faltando 1 centavo
+por efeito de arredondamento independente de cada parte. Isso é regra de
+negócio da camada de aplicação (algoritmo de rateio com ajuste do último
+item, por exemplo), não uma garantia automática do tipo de dado escolhido.
+
+---
+
 ## Escopo do MVP (Phase 6 do Roadmap)
 
 O MVP precisa cobrir o suficiente para o usuário fechar o mês sem abrir o
