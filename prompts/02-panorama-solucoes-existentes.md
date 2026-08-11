@@ -55,7 +55,7 @@ onde nenhum concorrente cobre isso, porque é esperado).
 Não estou procurando validação de mercado nem espaço competitivo — é só
 inventário de ideias de UI já testadas por outros produtos.
 
-Salve o resultado em docs/discovery/01-panorama-solucoes-existentes.md.
+Salve o resultado em docs/discovery/02-panorama-solucoes-existentes.md.
 ```
 
 ---
