@@ -40,7 +40,14 @@ reescrever ou resumir nesta etapa — o valor está no texto não filtrado.
 
 ```
 Preciso construir uma persona para o meu próprio app pessoal de controle
-financeiro. Diferente de uma persona de cliente comum, esta representa a mim
+financeiro. Esta persona deve ser realista o suficiente para que uma IA
+consiga simular de forma convincente uma conversa como essa pessoa — ela
+vai servir de base para um role-play de teste de estresse mais adiante
+(prompt 07). Tenha esse objetivo em mente desde já, não só como reforço de
+tom ao final, mas como algo a operacionalizar em cada seção da estrutura
+abaixo.
+
+Diferente de uma persona de cliente comum, esta representa a mim
 mesmo — o único usuário do produto — então a fonte de evidência não é
 entrevista com terceiros, é:
 
@@ -50,7 +57,9 @@ entrevista com terceiros, é:
 - docs/analise-requisitos.md — fatos e decisões já consolidados sobre o
   problema e o comportamento real documentado nas notas mensais
 
-Leia os dois. Construa a persona seguindo esta estrutura:
+Leia os dois, foque principalmente no persona-mensagens-brutas.md e nas mensagens enumeradas, mesmo que pareça uma simples explicação, tente ver a forma como algo é explicado e a escolha de palavras, e como um tema realmente é pensado.
+
+Construa a persona seguindo esta estrutura:
 
 1. Como o problema aparece na minha vida real (não a lista de requisitos —
    a experiência de viver com ela)
@@ -61,16 +70,25 @@ Leia os dois. Construa a persona seguindo esta estrutura:
    padrões, documentados em docs/estrutura-anotacoes.md se for útil)
 5. Como tomo decisões sobre dinheiro (o que me faz hesitar, o que me faz
    agir sem pensar)
-6. Formato DIZ / PENSA / SENTE / FAZ
+6. Mapa de empatia DIZ / PENSA / SENTE / FAZ, formatado como uma tabela
+   markdown 2x2 (DIZ ao lado de PENSA na mesma linha, SENTE ao lado de FAZ
+   na linha seguinte) — não como quatro listas separadas. A justaposição
+   lado a lado é o que revela a tensão entre o que eu digo e o que
+   realmente penso, ou entre o que sinto e o que de fato faço.
 7. Estilo de comunicação — como eu de fato escrevo e argumento, baseado nas
    mensagens brutas, não num tom genérico de "usuário satisfeito"
 8. Citações literais das minhas mensagens brutas (preserve exatamente como
    escrito, incluindo informalidade)
+9. Uma seção final "Para Simulação de Conversa (Guia para IA)": uma lista
+   de orientações diretas para quem for simular esta persona no role-play
+   do prompt 07 — como reagir a uma ideia ruim, o que faria hesitar, o que
+   faria se entusiasmar, que tom de resposta usar, o que nunca diria
+   abertamente (dizendo de outra forma em vez disso). Baseie isso nos
+   padrões já observados nas mensagens brutas, não em suposição genérica.
 
 IMPORTANTE: mantenha meu tom real das mensagens brutas — não suavize,
-não torne "profissional", não remova informalidade ou hesitação. O objetivo
-desta persona é servir de base para um role-play mais adiante (prompt 07);
-se ela ficar genérica, o role-play não vai ter valor.
+não torne "profissional", não remova informalidade ou hesitação. Se a
+persona ficar genérica, o role-play do prompt 07 não vai ter valor.
 
 Salve em reference-files/discovery/persona.md.
 ```
