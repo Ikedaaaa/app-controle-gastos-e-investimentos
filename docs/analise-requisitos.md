@@ -807,6 +807,30 @@ contra os extratos reais do banco pode gerar divergências. Por isso, para o
 MVP o usuário informa o valor manualmente. O cálculo automático fica para
 uma versão posterior, após estudo e validação da metodologia exata.
 
+**Descobertas preliminares (pesquisa rápida, não validada — ver
+`prompts/09-pesquisa-calculo-rendimento.md` para a pesquisa aprofundada
+antes de implementar):**
+- O mercado financeiro brasileiro usa **base 252 dias úteis por ano** para
+  anualizar taxas como CDI/DI e SELIC — convenção de mercado consolidada,
+  não escolha de cada instituição
+- A fórmula de fator diário geralmente citada é composição geométrica, não
+  divisão simples: `fator_diario = (1 + taxa_anual) ^ (1/252) - 1`. Uma
+  taxa anual de 10% não gera fator diário de `10%/252`, gera
+  `(1,10)^(1/252) - 1`
+- CDI é a média das taxas de empréstimo interbancário de um dia, divulgada
+  pela B3 apenas em dias úteis — não existe "CDI de sábado/domingo"
+  divulgado pela B3
+- Hipótese (não confirmada por fonte que descreva arquitetura interna real
+  de banco): instituições não recalculam rendimento a cada acesso do
+  usuário — o valor exibido é uma leitura de um saldo/cota já processado
+  por um job agendado (rodando ao menos uma vez por dia), semelhante à
+  marcação diária de cota usada por fundos de investimento
+- Hipótese (também não confirmada): contas com liquidez diária que creditam
+  rendimento todos os dias, inclusive fins de semana, provavelmente usam a
+  última taxa disponível (ex: a de sexta-feira) para compor o rendimento
+  dos dias não úteis seguintes, já que a B3 não divulga taxa nova nesses
+  dias
+
 Caso especial — contas que rendem automaticamente com liquidação diária
 (comum em contas de pagamento/carteiras digitais): rendem de forma automática,
 já líquido de impostos. O usuário registra o rendimento consolidado do período
