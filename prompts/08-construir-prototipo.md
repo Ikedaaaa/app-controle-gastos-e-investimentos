@@ -11,6 +11,33 @@ vale gerar **duas versões comparáveis**: uma deixando a IA livre para
 desenhar a tela só com base nos requisitos, outra usando
 `sugestoes-ui-navegacao.md` como influência direta.
 
+> **Atenção com dados de exemplo.** Diferente da persona (markdown, não
+> versionado), o protótipo é código que você pretende commitar e mostrar
+> como portfólio — dado financeiro real seu ali seria exposto
+> publicamente, sem chance fácil de reverter depois. Toda instrução deste
+> prompt que pede "dados de exemplo realistas" significa fictícios mas
+> plausíveis (nomes de categoria genéricos como "Internet", "Aluguel",
+> "Mercado"; valores redondos ou aleatórios dentro de uma faixa razoável)
+> — nunca copiados ou inspirados em valores, nomes de caixinha, ou
+> instituições específicas mencionados nesta conversa, no
+> `analise-requisitos.md`, ou em qualquer arquivo de `reference-files/`.
+> Para não repetir esse risco em dois lugares, os dados são gerados **uma
+> única vez**, como módulo compartilhado (ver "Arquitetura compartilhada"
+> abaixo) — a Versão B importa os mesmos dados da Versão A, não gera os
+> próprios.
+>
+> Os dados fictícios são gerados **sem nenhuma consulta** às anotações
+> reais em `reference-files/gastos*`. Não é "disfarçar" um dado real — é
+> nunca ler o dado real para gerar o fictício. Isso não é só cautela:
+> disfarçar dado real preservando estrutura (proporção entre categorias,
+> quantidade de itens, valores recorrentes) tem risco real de
+> reidentificação mesmo depois de trocar nomes e valores — anonimização
+> segura é disciplina técnica própria, não algo garantido por uma
+> instrução informal de prompt. O objetivo do protótipo é testar
+> estrutura de tela e fluxo de interação, não fidelidade ao seu perfil
+> financeiro real — um dado genérico plausível cumpre esse objetivo
+> igualmente bem, sem o risco.
+
 > **Sobre a tecnologia:** Vite + React (sem TypeScript, sem persistência),
 > Tailwind para estilização. Ver justificativa completa na conversa que
 > originou este prompt — resumo: o domínio tem estado bem mais
@@ -56,6 +83,21 @@ Mapa de quem gera o quê, em qual sessão:
 | `tasks.md` — tarefas da Versão B (adicionadas ao arquivo existente) | Implementação B | 2 |
 | *(execução das tarefas acima)* | Versão B construída e revisada | 2 |
 | `prototype/COMPARACAO.md` | Comparação entre A e B | 2 (ou nova sessão — sem risco, ambas já estão em código) |
+
+**Sobre o fluxo nativo de botões da interface de Spec do Kiro ("Continue" /
+"Generate design" / "Generate tasks"):** cada clique nesses botões abre um
+chat novo, sem memória da conversa anterior — só lê os arquivos da spec já
+salvos em disco. Isso é compatível com a Sessão 1: como nenhum dos prompts
+1.1/1.2/1.3 menciona `sugestoes-ui-navegacao.md`, pode usar o fluxo nativo
+normalmente (clicar em "Generate design", colar o prompt do Passo 1.2 no
+chat que abrir, e assim por diante) — o isolamento se mantém, porque
+nenhuma das janelas envolvidas toca nesse arquivo.
+
+Para a **Sessão 2**, que não é geração inicial (é edição incremental de um
+`design.md`/`tasks.md` que já existem, adicionando só a seção da Versão B),
+não há confirmação de como o fluxo nativo de botões se comporta nesse
+cenário de atualização — abra um chat novo manualmente e cole o prompt da
+Sessão 2 diretamente, em vez de depender do botão "Continue" da spec.
 
 Requisitos funcionais não precisam dessa separação por sessão — são
 idênticos entre A e B e não têm relação com `sugestoes-ui-navegacao.md`, daí
@@ -131,6 +173,84 @@ Com requirements.md aprovado, gere design.md em duas partes:
    sem depender de abrir o modo responsivo do navegador (F12) para ver a
    proporção correta.
 
+   Defina também a estrutura de **dados e cálculo compartilhados**, em
+   prototype/src/shared/ (fora das pastas versao-a-livre/ e
+   versao-b-influenciada/, para não duplicar entre as duas versões):
+   - mockData.js — módulo JS (não .json puro, para poder comentar e não
+     ter limitação de sintaxe) exportando os dados fictícios do protótipo
+     (períodos, itens do fluxo, carteiras, aportes), fictícios mas
+     plausíveis, seguindo a regra de dados de exemplo do início deste
+     documento. NÃO leia nem consulte reference-files/gastos* para gerar
+     esses dados — são inteiramente inventados, sem nenhuma base em dado
+     real, mesmo disfarçado ou anonimizado
+   - calculos.js — funções puras que ambas as versões vão importar e usar
+     igualmente: recálculo do saldo em cascata, manutenção do invariante
+     de prefixo contíguo do checkbox (seção 3 do analise-requisitos.md),
+     e qualquer outra regra de negócio que não deva variar entre A e B —
+     só a apresentação varia entre as versões, não o comportamento
+     subjacente
+
+   Descreva no design.md a forma exata dos dados (estrutura de cada
+   objeto exportado por mockData.js), para que a Versão B, gerada numa
+   sessão futura, importe exatamente a mesma estrutura sem reinterpretar
+   ou duplicar.
+
+   Os dados fictícios precisam ser suficientes para testar a interface de
+   verdade, não apenas genéricos. "Genérico" (fictício, não meu dado real)
+   e "suficiente" (cobre os cenários abaixo) são requisitos independentes
+   — uma lista de 3 itens soltos seria genérica, mas insuficiente para
+   perceber problema real de UI. Garanta que os dados cubram, no mínimo:
+   - **Navegação entre meses, cobrindo modo mensal e quinzenal, e
+     diferentes graus de estado vazio** — não deixe a IA decidir livremente
+     entre "meses ou quinzenas"; gere exatamente estes 4 meses distintos
+     (nenhum repetido — cada um testa algo que os outros não testam),
+     para cobrir tanto a alternância de modo (seção 1 do
+     analise-requisitos.md) quanto diferentes formas de "vazio":
+     1. Um mês no **modo mensal** (um único período), com 8-12 itens
+        cobrindo pelo menos 4 categorias diferentes das listadas na
+        seção 5 (gasto fixo, gasto variável, investimento, acúmulo,
+        fatura, transferência) — não "itens normais" genéricos, itens
+        com descrição concreta (ex: "Aluguel", "Internet", "Aporte CDB",
+        "Fatura cartão")
+     2. Um mês no **modo quinzenal**, com os dois períodos (1ª e 2ª
+        quinzena) completos, cada um com 5-8 itens cobrindo categorias
+        diferentes entre si (não repita a mesma combinação do mês 1)
+     3. Um mês no **modo quinzenal**, com a 1ª quinzena tendo só 1-2
+        itens (dado escasso, não vazio) e a 2ª quinzena **sem nenhum
+        item** (como se o período tivesse sido criado automaticamente,
+        mas o usuário ainda não preencheu nada) — um único mês cobrindo
+        os dois graus de "quase vazio" ao mesmo tempo
+     4. Um mês **futuro**, sem nenhum período criado ainda — só existe
+        como próxima posição no carrossel de navegação, nada preenchido
+   - **Um período com lista longa de itens no fluxo** (15+ itens), em
+     algum dos meses acima, para testar comportamento de rolagem e se a
+     hierarquia visual do saldo em cascata se mantém legível numa lista
+     extensa — não só num exemplo curto e confortável
+   - **Itens com estado pendente e realizado misturados**, respeitando o
+     invariante de prefixo contíguo (seção 3), para testar o checkbox em
+     cascata de verdade, não só itens todos no mesmo estado
+   - **Pelo menos uma carteira com múltiplos aportes** (3+), incluindo
+     aportes com datas e rendimentos diferentes, para testar a listagem
+     de aportes dentro de uma carteira, não só uma carteira vazia ou com
+     um único aporte
+   - **Pelo menos um item abaixo de R$ 20 e um item acima de R$ 3.000**
+     dentro da mesma categoria (ex: uma compra pequena e uma fatura alta),
+     para testar se a coluna de valor se mantém legível com números de
+     ordens de grandeza bem diferentes — não só valores próximos entre si
+   - **Ao menos uma fatura com múltiplas fontes de composição** (seção
+     9-10), para testar a explicação de gasto composta, não só itens
+     simples sem composição
+   - **Todas as categorias da seção 5 representadas em algum item, em
+     algum mês** (gasto fixo, gasto variável, investimento, acúmulo,
+     fatura, transferência entre contas, custódia de terceiros) — não é
+     necessário estar todas no mesmo mês, mas nenhuma categoria deve
+     ficar totalmente ausente de todo o conjunto de dados
+
+   Se, ao longo da implementação, você perceber que uma tela específica
+   precisaria de outro cenário de dado para ser testada de verdade (ex:
+   uma tela que só faz sentido com muitas carteiras cadastradas), sinalize
+   isso e adicione ao mockData.js — a lista acima é o mínimo, não o teto.
+
 2. Uma seção "Decisões de layout — Versão A": como cada tela deve ser
    disposta visualmente, decidido só a partir dos requisitos e das decisões
    em docs/discovery/ — sem nenhuma influência externa de layout.
@@ -165,13 +285,23 @@ Gere tasks.md cobrindo:
    sem misturar componentes de uma com os da outra. Inclua o componente
    seletor na raiz (App.jsx), com a opção "Versão A" funcional e "Versão B"
    desabilitada/placeholder por enquanto.
-2. Implementação de cada tela da Versão A como tarefas incrementais
+2. Criação de prototype/src/shared/mockData.js e
+   prototype/src/shared/calculos.js, seguindo a estrutura descrita em
+   design.md. Dados fictícios mas plausíveis (não "lorem ipsum", mas
+   também nunca meus valores ou nomes reais — nada copiado ou inspirado
+   em qualquer número, nome de carteira/caixinha ou instituição
+   mencionados no analise-requisitos.md, nesta conversa, ou em qualquer
+   arquivo de reference-files/). Esta tarefa vem antes das tarefas de
+   tela, já que elas vão consumir esses dados.
+3. Implementação de cada tela da Versão A como tarefas incrementais
    (ex.: navegação de período → fluxo de cascata → painel analítico →
-   carteira), seguindo design.md.
-3. Uma tarefa final de revisão: simular dados de exemplo realistas (não
-   "lorem ipsum"), e registrar em prototype/src/versao-a-livre/NOTAS.md o
-   que foi assumido ou simplificado por falta de informação, e qualquer
-   decisão de docs/discovery/ que não foi bem representada.
+   carteira), seguindo design.md e importando de
+   prototype/src/shared/mockData.js e prototype/src/shared/calculos.js —
+   não gere dados nem lógica de cálculo dentro da pasta versao-a-livre/.
+4. Uma tarefa final de revisão: registrar em
+   prototype/src/versao-a-livre/NOTAS.md o que foi assumido ou
+   simplificado por falta de informação, e qualquer decisão de
+   docs/discovery/ que não foi bem representada.
 ```
 
 Execute as tarefas até a Versão A estar completa, sem em nenhum momento
@@ -241,6 +371,14 @@ prototype/src/versao-b-influenciada/, sem modificar ou marcar como
 concluídas as tarefas já existentes da Versão A. Inclua também uma tarefa
 para habilitar a opção "Versão B" no componente seletor (App.jsx),
 apontando para os componentes recém-criados em vez do placeholder.
+
+Os dados fictícios e a lógica de cálculo já existem em
+prototype/src/shared/ (mockData.js, calculos.js), criados na Sessão 1 — a
+Versão B importa exatamente os mesmos, não gera dados próprios nem
+duplica lógica de cálculo. Isso também significa que os dados fictícios
+não são influenciados por reference-files/sugestoes-ui-navegacao.md, já
+que foram criados antes de esse arquivo ser lido — só o layout é
+influenciado por ele, nunca o dado.
 ```
 
 Execute as tarefas até a Versão B estar completa.
