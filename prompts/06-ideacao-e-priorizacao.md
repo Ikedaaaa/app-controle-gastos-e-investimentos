@@ -5,9 +5,10 @@ partir de três perspectivas (startup sem legado, setor adjacente, personas),
 depois pontuava por valor de negócio x viabilidade comercial. Aqui não há
 decisão de produto em aberto (o `analise-requisitos.md` já fechou isso) — o
 que resta é decidir **como resolver em tela** cada ponto de UI ainda aberto,
-identificado nos prompts `01` e `04`. A priorização também muda de critério:
-não é valor de negócio x viabilidade comercial, é clareza de uso x esforço
-de implementação.
+consolidado em `docs/discovery/01-pontos-abertos.md` (prompt `01`) e com
+HMWs geradas em `docs/discovery/04-problema-e-hmw.md` (prompt `04`). A
+priorização também muda de critério: não é valor de negócio x viabilidade
+comercial, é clareza de uso x esforço de implementação.
 
 ---
 
@@ -18,17 +19,21 @@ Você é um designer de produto especializado em UX de apps financeiros para
 Android, com foco em interfaces simples de operar no dia a dia, não em
 soluções visualmente ousadas ou inéditas.
 
-Tenho uma lista de pontos de UI ainda abertos, com perguntas HMW associadas,
-em docs/discovery/02-problema-e-hmw.md. Também tenho referências de como
-outros apps resolvem problemas parecidos em
-docs/discovery/01-panorama-solucoes-existentes.md.
+Tenho uma lista de pontos de UI ainda abertos, com o contexto completo (a
+citação original do analise-requisitos.md ou sugestoes-ui-navegacao.md) em
+docs/discovery/01-pontos-abertos.md, e as perguntas HMW derivadas de cada
+ponto em docs/discovery/04-problema-e-hmw.md. Leia os dois — o primeiro dá
+o porquê completo, o segundo as perguntas específicas a responder. Também
+tenho referências de como outros apps resolvem problemas parecidos em
+docs/discovery/02-panorama-solucoes-existentes.md.
 
 Para cada ponto aberto, gere 2-3 alternativas concretas de solução de UI.
 Use estas lentes ao gerar (nem toda lente precisa gerar algo para todo
 ponto — use a que fizer sentido):
 
 - **Referência externa**: adapte algo que um app existente já faz bem
-  (do panorama do prompt 02), ajustado às minhas particularidades
+  (do panorama em docs/discovery/02-panorama-solucoes-existentes.md),
+  ajustado às minhas particularidades
 - **Minimalismo extremo**: qual é a versão mais simples possível, mesmo que
   pareça "óbvia demais"?
 - **Minha persona**: leia reference-files/discovery/persona.md e pense como
@@ -38,13 +43,13 @@ ponto — use a que fizer sentido):
 Para cada alternativa, seja concreto: descreva o comportamento em tela, não
 apenas o conceito abstrato.
 
-Salve em docs/discovery/04-alternativas-ui.md, organizado por ponto aberto.
+Salve em docs/discovery/06-alternativas-ui.md, organizado por ponto aberto.
 ```
 
 ## Etapa 2: Priorize
 
 ```
-Leia docs/discovery/04-alternativas-ui.md. Para cada ponto aberto, avalie as
+Leia docs/discovery/06-alternativas-ui.md. Para cada ponto aberto, avalie as
 alternativas geradas em duas dimensões, nota de 1 a 5:
 
 - **Clareza de uso**: o quão intuitivo é para mim entender e usar sem
@@ -60,7 +65,7 @@ precisa ser sempre a nota mais alta em ambos os critérios — diga seu
 raciocínio quando escolher algo com esforço maior por ganho grande de
 clareza, ou vice-versa.
 
-Salve as tabelas e recomendações de volta em docs/discovery/04-alternativas-ui.md.
+Salve as tabelas e recomendações de volta em docs/discovery/06-alternativas-ui.md.
 ```
 
 ## Etapa 3 (opcional): teste de estresse rápido
