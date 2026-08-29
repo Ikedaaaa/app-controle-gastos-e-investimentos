@@ -75,3 +75,36 @@ versão.
 - Ideação focada em decisões de UI já sinalizadas como abertas no `analise-requisitos.md`, não em descoberta de features novas (o escopo do MVP já está definido)
 - Priorização por clareza de uso x esforço de implementação, não valor de negócio x viabilidade comercial
 - Persona construída a partir de mensagens pessoais reais, não de entrevistas com clientes
+
+### Exemplo real validando a remoção da escada "IA Dirigida/Delegada"
+
+Ao rodar o prompt `05` neste projeto, o resultado foi: nenhuma oportunidade
+de IA genuína passou o filtro de proporcionalidade (ver
+`docs/discovery/05-oportunidades-ia.md`). Isso contrasta diretamente com um
+exercício equivalente feito durante o próprio treinamento original, sobre
+um sistema de medicina do trabalho: ali, uma IA analisando dados de um
+colaborador (histórico de atestados, afastamentos, exames) durante um
+atendimento médico *era* uma oportunidade genuína — o médico tinha ~10
+minutos por consulta, cruzava dados de terceiros que ele mesmo não gerou, e
+a decisão (afastar, liberar, restringir) carregava risco legal e de saúde
+real.
+
+As diferenças que explicam os resultados opostos:
+- **Volume/dispersão através de pessoas** — o valor da IA no caso médico
+  vinha de cruzar padrão entre *vários* colaboradores (ex: "3 pessoas do
+  mesmo setor com queixa parecida"). Um app pessoal de usuário único não
+  tem população para comparar padrão.
+- **Pressão de tempo real** — 30 atendimentos/dia justificam automatizar
+  síntese de contexto. Não há urgência equivalente ao consultar os próprios
+  dados financeiros.
+- **Consequência da decisão** — afastar/liberar um colaborador tem risco
+  legal e de saúde. Uma decisão financeira pessoal não carrega esse mesmo
+  peso de responsabilidade sobre terceiros.
+- **Quem gerou o dado vs. quem precisa interpretá-lo** — o médico interpreta
+  dado de terceiros que nunca viu antes. No app pessoal, o usuário é autor
+  e interpretador da mesma informação — não há lacuna de contexto a
+  preencher.
+
+Isso confirma, com um caso concreto e não só teoricamente, que remover a
+escada de maturidade de IA do prompt `05` foi a adaptação certa: o critério
+original não estava errado, só não se aplica a este domínio.

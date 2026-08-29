@@ -53,7 +53,7 @@ já está nas seções 17 e "Escopo do MVP" do documento.
 Se nada passar no filtro além do que já está documentado, diga isso
 explicitamente — não force uma sugestão para preencher a etapa.
 
-Salve o resultado em docs/discovery/03-oportunidades-ia.md.
+Salve o resultado em docs/discovery/05-oportunidades-ia.md.
 ```
 
 ---
