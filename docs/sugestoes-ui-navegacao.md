@@ -226,6 +226,45 @@ entrar na lista de pontos abertos ao rodar os prompts de refinamento (ver
 `prompts/01-setup.md` e `prompts/04-problema-e-hmw.md`), e vale comparar
 diretamente entre as duas versões do protótipo (`prompts/08-construir-prototipo.md`).
 
+### Hipótese adicional (especulativa, pós-MVP): tela inicial personalizável
+
+Surgiu ao gerar HMWs sobre a tela inicial (prompt `04`): "como poderíamos
+permitir que o usuário ajuste o que vê primeiro ao abrir o app, de acordo
+com o que costuma consultar com mais frequência?" abre espaço para uma
+quarta hipótese não listada acima — uma tela inicial com elementos
+configuráveis (ex: portlets/widgets), onde o usuário escolhe o que aparece
+e em que ordem, em vez de uma estrutura fixa.
+
+Registrado aqui só para não se perder, não como direção adotada. Avaliação
+preliminar: provavelmente complexidade desproporcional para o MVP e para
+um app de usuário único (a justificativa usual para painéis configuráveis
+— hábitos de uso diferentes entre usuários distintos — não se aplica aqui,
+já que o próprio usuário define e já conhece seu hábito). Também seria uma
+camada de complexidade adicional em relação à própria tela de patrimônio
+consolidado, já marcada acima como provavelmente fora do MVP. Se for
+considerada, avaliar no prompt `06` (ideação e priorização) ao lado das
+três hipóteses acima, não como substituta automática delas.
+
+### Hipótese adicional (especulativa): alternância entre tema claro e escuro
+
+Surgiu ao gerar HMWs sobre "tema e cores" (prompt `04`), mas desviou do
+escopo original desse ponto — o ponto aberto real é qual paleta de cores
+usar (ver acima), não como alternar entre temas. Sem origem documental
+própria; registrado aqui como nota separada, não como ponto aberto formal.
+
+Perguntas levantadas, preservadas para referência futura caso o design de
+telas queira revisitar o assunto:
+- Como poderíamos ajudar o usuário a perceber a transição entre tema claro
+  e escuro de forma sutil, sem distrair da tarefa em andamento?
+- Como poderíamos manter a leitura dos valores (sinal de entrada/saída)
+  igualmente clara nos dois temas, claro e escuro?
+- Como poderíamos permitir que o usuário escolha entre tema claro, escuro
+  ou automático (seguindo o sistema) de forma simples?
+
+Não é prioridade — o app provavelmente segue o padrão comum de suportar os
+dois temas com opção de seguir o sistema, sem exigir muito debate de UX
+além disso.
+
 ## Comportamento de gráficos em tela pequena
 
 - Pensar no comportamento de rolagem vs. troca de tela quando um gráfico
