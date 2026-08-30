@@ -16,10 +16,15 @@ Esta lista é o insumo de entrada para os prompts `04-problema-e-hmw.md`,
 ### 1. Ordem de exibição dos três valores no quadro de resumo do período
 **Origem:** Seção 4 — "Snapshot de 'Previsto Inicial'"
 
-O quadro de resumo pode exibir `Planejado inicialmente (snapshot) |
-Realizado | Previsto (vivo, atual)`. O documento sugere uma ordem (Realizado
-antes de Previsto) mas deixa explícito: "ajustável livremente no design de
-UI conforme preferência de leitura".
+**Resumo neutro (para prompts que geram alternativa de UI, ex: `06`):** o
+quadro de resumo do período precisa exibir três valores — Planejado
+inicialmente, Realizado e Previsto (vivo). A ordem/disposição entre eles
+está em aberto.
+
+**Contexto completo:** o quadro de resumo pode exibir `Planejado
+inicialmente (snapshot) | Realizado | Previsto (vivo, atual)`. O documento
+sugere uma ordem (Realizado antes de Previsto) mas deixa explícito:
+"ajustável livremente no design de UI conforme preferência de leitura".
 
 ### 2. Forma de apresentação do breakdown de totais do período
 **Origem:** Seção 4 — quadro de resumo (Total no Crédito, separação
@@ -65,15 +70,25 @@ sem escolha no texto (não é só a ressalva genérica do documento).
 ### 6. Tema e paleta de cores
 **Origem:** "Tema e cores"
 
-Valores hex sugeridos para tema escuro (`#000000`, `#3CBA59`, `#8300A7`) e
-claro (branco + azul claro, sem hex definido). "A definir/revisar quando a
-identidade visual do app for desenhada."
+**Resumo neutro (para prompts que geram alternativa de UI, ex: `06`):** o
+app precisa de uma paleta de cores para tema escuro e tema claro. Nenhuma
+cor está decidida.
+
+**Contexto completo:** valores hex sugeridos para tema escuro (`#000000`,
+`#3CBA59`, `#8300A7`) e claro (branco + azul claro, sem hex definido). "A
+definir/revisar quando a identidade visual do app for desenhada."
 
 ### 7. Diferenciação visual entre faturas de cartões diferentes
 **Origem:** "Ícones genéricos por tipo de gasto"
 
-"Ícone de cartão para fatura (com problema aberto: como diferenciar
-visualmente a fatura de cartões diferentes — usar dois ícones combinados?)"
+**Resumo neutro (para prompts que geram alternativa de UI, ex: `06`):**
+quando o usuário tem mais de um cartão de crédito, a lista do fluxo precisa
+diferenciar visualmente de qual cartão é cada fatura. Nenhuma solução
+decidida.
+
+**Contexto completo:** "Ícone de cartão para fatura (com problema aberto:
+como diferenciar visualmente a fatura de cartões diferentes — usar dois
+ícones combinados?)"
 
 ### 8. Prioridade do ícone de compra no crédito: método de pagamento vs. destino
 **Origem:** "Ícones genéricos por tipo de gasto"
@@ -85,17 +100,26 @@ anotações originais."
 ### 9. Tela dedicada por classe de ativo vs. tudo dentro do gráfico de composição
 **Origem:** "Tela dedicada por classe de ativo"
 
-Duas alternativas descritas, nenhuma escolhida: aba/tela específica por
-classe de ativo (ex: exterior) vs. tudo dentro do gráfico de composição da
-carteira com filtros.
+**Resumo neutro (para prompts que geram alternativa de UI, ex: `06`):** o
+usuário precisa poder ver o detalhe de uma classe de ativo específica (ex:
+exterior) dentro da carteira. Não está decidido se isso é uma tela própria,
+parte do gráfico de composição, ou outra abordagem.
+
+**Contexto completo:** duas alternativas descritas, nenhuma escolhida:
+aba/tela específica por classe de ativo (ex: exterior) vs. tudo dentro do
+gráfico de composição da carteira com filtros.
 
 ### 10. Tela inicial ao abrir o app
 **Origem:** "Tela inicial / o que aparece ao abrir o app"
 
-Três hipóteses levantadas, nenhuma testada ou escolhida: abrir direto no
-Período atual; tela de patrimônio/dashboard consolidado (provavelmente fora
-do MVP); ou uma combinação das duas. O próprio documento aponta este ponto
-como candidato a entrar na lista de refinamento.
+**Resumo neutro (para prompts que geram alternativa de UI, ex: `06`):** o
+que o usuário vê no primeiro instante ao abrir o app não está decidido.
+
+**Contexto completo:** três hipóteses levantadas, nenhuma testada ou
+escolhida: abrir direto no Período atual; tela de patrimônio/dashboard
+consolidado (provavelmente fora do MVP); ou uma combinação das duas. O
+próprio documento aponta este ponto como candidato a entrar na lista de
+refinamento.
 
 ### 11. Comportamento de gráficos em tela pequena
 **Origem:** "Comportamento de gráficos em tela pequena"

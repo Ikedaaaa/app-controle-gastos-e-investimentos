@@ -12,6 +12,15 @@ comercial, é clareza de uso x esforço de implementação.
 
 ---
 
+> **Sessão única ou várias, sem diferença de risco.** Diferente do prompt
+> `08` (onde a separação de sessão existe para evitar contaminação por um
+> arquivo específico), aqui não há nenhum arquivo "proibido" entre as
+> etapas — pode rodar as 3 etapas na mesma conversa, sem trocar de chat.
+> Cada etapa começa lendo o arquivo gerado pela etapa anterior (em vez de
+> confiar na memória da conversa) só como boa prática — garante que o
+> passo funcione igual, seja na mesma sessão (onde a releitura é
+> redundante, mas inofensiva) ou numa sessão nova (onde é necessária).
+
 ## Etapa 1: Gere alternativas por ponto aberto
 
 ```
@@ -26,6 +35,13 @@ ponto em docs/discovery/04-problema-e-hmw.md. Leia os dois — o primeiro dá
 o porquê completo, o segundo as perguntas específicas a responder. Também
 tenho referências de como outros apps resolvem problemas parecidos em
 docs/discovery/02-panorama-solucoes-existentes.md.
+
+Ao ler docs/discovery/01-pontos-abertos.md, alguns pontos têm duas partes:
+um "Resumo neutro" e um "Contexto completo". Leia **apenas o "Resumo
+neutro"** desses pontos — não leia a parte "Contexto completo" em nenhuma
+circunstância, mesmo que pareça útil para gerar uma alternativa melhor.
+Pontos sem essa divisão (só têm origem/descrição direta) podem ser lidos
+normalmente, na íntegra.
 
 Para cada ponto aberto, gere 2-3 alternativas concretas de solução de UI.
 Use estas lentes ao gerar (nem toda lente precisa gerar algo para todo
