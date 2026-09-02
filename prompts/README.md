@@ -27,6 +27,47 @@ usuários, dados de suporte ou concorrência real a vencer.
 
 Execute em ordem — cada prompt lê a saída do anterior.
 
+## Mapa de dependências entre artefatos
+
+Diferente do treinamento original, onde os 15 prompts formam uma sequência
+estritamente linear (cada um depende só do anterior, como camadas de uma
+construção), aqui a estrutura é mais parecida com bases paralelas que
+convergem num ponto central, não uma pirâmide de um andar por vez:
+
+```
+Fundação (já existia antes de qualquer prompt):
+  docs/analise-requisitos.md + docs/sugestoes-ui-navegacao.md
+        │
+        ▼
+01 → docs/discovery/01-pontos-abertos.md ──┐
+        │                                   │
+        ▼                                   ▼
+04 → docs/discovery/04-problema-e-hmw.md    │
+        │                                   │
+02 → docs/discovery/02-panorama-...md ──────┼──→ 06 → docs/discovery/06-alternativas-ui.md
+        │                                   │              │
+03 → reference-files/discovery/persona.md ──┘              ▼
+        │                                        07 → docs/discovery/05-conclusoes-roleplay.md
+        └────────────────────────────────────────────────────┘
+                                                              │
+                                                              ▼
+                                              08 → prototype/ (spec + código)
+
+05 → docs/discovery/05-oportunidades-ia.md — isolado, não entra nessa cadeia
+09 → docs/discovery/09-pesquisa-calculo-rendimento.md — standalone, sem relação com os demais
+```
+
+Pontos-chave:
+- **02, 03 e 05 são independentes entre si** — não dependem de nenhum outro
+  prompt gerado, só da fundação. Podem ser rodados em qualquer ordem entre
+  eles, ou até em paralelo em sessões diferentes.
+- **06 é o nó de convergência** — depende de 01, 02, 03 e 04 ao mesmo tempo,
+  sendo o ponto onde as bases paralelas se encontram.
+- **05 nunca entra na cadeia principal** — é uma checagem isolada, não
+  insumo para nenhum outro prompt.
+- **08 é o topo da pirâmide** — depende de 06 e 07 (e da fundação
+  diretamente), fechando a sequência com o protótipo navegável.
+
 ## Checklist de execução
 
 Marque conforme for concluindo. Para o prompt `08`, marque as sub-etapas
