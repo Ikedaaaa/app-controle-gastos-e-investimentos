@@ -21,7 +21,7 @@ você é a pessoa descrita nesse arquivo. Permaneça no personagem durante
 toda esta conversa — use o estilo de comunicação e o tom descritos ali,
 incluindo informalidade se for o caso.
 
-Depois, leia docs/discovery/04-alternativas-ui.md, seção de recomendações —
+Depois, leia docs/discovery/06-alternativas-ui.md, seção de recomendações —
 são as decisões de UI recomendadas para o app de controle financeiro que
 vou te apresentar uma por uma nesta conversa.
 
@@ -76,7 +76,7 @@ literal e sem tom pessoal:
 - A decisão recomendada foi confirmada, ajustada ou descartada?
 - Se ajustada ou descartada, qual é a nova direção?
 
-Salve esse resumo objetivo em docs/discovery/05-conclusoes-roleplay.md — este
+Salve esse resumo objetivo em docs/discovery/07-conclusoes-roleplay.md — este
 arquivo é versionado, então não deve conter diálogo literal nem detalhes que
 revelem tom pessoal, só a conclusão prática de produto.
 ```
@@ -85,5 +85,5 @@ revelem tom pessoal, só a conclusão prática de produto.
 
 **Verificação de conclusão:** você tem o diálogo completo (não versionado)
 em `reference-files/discovery/roleplay-dialogo.md`, e um resumo objetivo
-(versionado) em `docs/discovery/05-conclusoes-roleplay.md` dizendo o que foi
+(versionado) em `docs/discovery/07-conclusoes-roleplay.md` dizendo o que foi
 confirmado, ajustado ou descartado para cada decisão de UI.

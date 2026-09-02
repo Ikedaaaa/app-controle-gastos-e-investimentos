@@ -47,7 +47,7 @@ Fundação (já existia antes de qualquer prompt):
 02 → docs/discovery/02-panorama-...md ──────┼──→ 06 → docs/discovery/06-alternativas-ui.md
         │                                   │              │
 03 → reference-files/discovery/persona.md ──┘              ▼
-        │                                        07 → docs/discovery/05-conclusoes-roleplay.md
+        │                                        07 → docs/discovery/07-conclusoes-roleplay.md
         └────────────────────────────────────────────────────┘
                                                               │
                                                               ▼
@@ -85,7 +85,7 @@ conforme o mapa de sessões definido dentro do próprio arquivo.
   - [ ] Priorização feita
 - [ ] `07-persona-roleplay.md`
   - [ ] Role-play executado
-  - [ ] Conclusões objetivas extraídas para `docs/discovery/05-conclusoes-roleplay.md`
+  - [ ] Conclusões objetivas extraídas para `docs/discovery/07-conclusoes-roleplay.md`
 - [ ] `08-construir-prototipo.md`
   - [ ] Sessão 1 — requirements.md
   - [ ] Sessão 1 — design.md (arquitetura compartilhada + Versão A)

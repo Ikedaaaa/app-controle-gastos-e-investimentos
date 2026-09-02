@@ -3,7 +3,7 @@
 Passo final da sequência. Você chega aqui com: os requisitos consolidados
 (`docs/analise-requisitos.md`), as decisões de UI para os pontos que
 estavam abertos, confirmadas ou ajustadas pelo role-play
-(`docs/discovery/05-conclusoes-roleplay.md`), e as suas próprias ideias de
+(`docs/discovery/07-conclusoes-roleplay.md`), e as suas próprias ideias de
 tela já registradas antes deste processo (`reference-files/sugestoes-ui-navegacao.md`).
 
 Diferente do treinamento original (uma única PoC em HTML/CSS/JS puro), aqui
@@ -125,8 +125,8 @@ sinal de que não deve ser feito.
 Antes de gerar requirements.md, leia:
 
 - docs/analise-requisitos.md (documento completo de requisitos do produto)
-- docs/discovery/05-conclusoes-roleplay.md (decisões de UI confirmadas/ajustadas)
-- docs/discovery/04-alternativas-ui.md (decisões recomendadas, para pontos
+- docs/discovery/07-conclusoes-roleplay.md (decisões de UI confirmadas/ajustadas)
+- docs/discovery/06-alternativas-ui.md (decisões recomendadas, para pontos
   que não passaram pelo role-play)
 
 O protótipo precisa representar o fluxo central do app: navegação de
