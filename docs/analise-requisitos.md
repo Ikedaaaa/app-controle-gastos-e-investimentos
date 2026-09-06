@@ -333,13 +333,13 @@ saldo remanescente.
 - Gastos recorrentes são pré-carregados no início de cada período com seus
   valores padrão, editáveis antes de confirmar. **Ancoragem por data, não
   por tipo de período:** um gasto recorrente é configurado com um dia
-  habitual do mês (ex: dia 12 para a conta de luz, dia 20 para a internet),
+  habitual do mês (ex: dia 12 para a conta X, dia 20 para a conta Y),
   não vinculado a um tipo específico de período (quinzenal/mensal). Ao gerar
   as sugestões de um novo Período, o app verifica quais recorrentes têm seu
   dia habitual dentro do intervalo de datas daquele Período e os sugere
   automaticamente. Isso garante que a recorrência continue funcionando
   corretamente mesmo se o tipo de período mudar de um mês para outro (ex:
-  internet configurada para dia 20 aparece na segunda quinzena se o mês for
+  conta X configurada para dia 20 aparece na segunda quinzena se o mês for
   quinzenal, ou no único período do mês se for mensal — sem precisar
   reconfigurar o recorrente). Inteligência de ajuste para fim de
   semana/feriado (mover para o próximo dia útil) não é necessária agora —
@@ -673,6 +673,97 @@ detalhada como a fonte completa por trás de cada número — nunca dados
 duplicados, sempre a mesma origem (os itens do fluxo), só apresentados em
 dois níveis de agregação diferentes.
 
+### Nomenclatura: "movimentação" como termo de exibição
+O termo técnico interno para a entidade continua sendo Item (do Fluxo,
+seção 3). Para exibição ao usuário, prefere-se **"movimentação"** —
+termo padrão de mercado (extratos bancários, apps de finanças), mais
+reconhecível do que "item do fluxo", que é descrição estrutural da
+implementação, não linguagem natural do domínio. As duas telas descritas
+abaixo (drill-down simples e tela consolidada) exibem a mesma entidade,
+só sob nomes de UI diferentes do termo técnico.
+
+### Tela consolidada de movimentações (MVP: drill-down simples; demais pontos de acesso e filtros, pós-MVP)
+
+O drill-down descrito acima (tocar num total do resumo) navega hoje para
+"a lista filtrada" — essa lista é, na prática, uma tela própria e
+reaproveitável de **listagem de movimentações**, não uma tela nova para
+cada total. O MVP cobre apenas o acesso mais simples a essa tela: tocar em
+um total do quadro de resumo abre a lista já filtrada por aquele total,
+sem nenhum controle de filtro adicional visível ao usuário — não é
+possível, no MVP, trocar de filtro dentro da tela ou combinar critérios.
+
+Internamente, mesmo no MVP, a consulta que popula essa tela filtra pelo
+vínculo estrutural do Fluxo (não uma FK direta de Item para Período — a
+hierarquia real é Período → Fluxo → Item, seção 2). O drill-down de um
+total do resumo é sempre escopado ao Fluxo em exibição no momento.
+
+**Extensões pós-MVP, registradas para não se perder (nenhuma decidida como
+prioridade, apenas direção):**
+
+- **Mais pontos de acesso à mesma tela**, sem multiplicar telas — cada
+  ponto de entrada só muda o filtro inicial aplicado:
+  - Ver todas as movimentações de um Fluxo específico, sem passar pelo
+    drill-down de um total (acesso direto, ainda escopado a um Fluxo)
+  - Ver todas as movimentações de um Período, atravessando todos os
+    Fluxos daquele Período (não só o Fluxo em exibição)
+  - Ver todas as movimentações de um Mês, atravessando todos os Períodos
+    e Fluxos do mês — esta é a materialização concreta do requisito já
+    existente "deve ser possível visualizar o mês consolidado,
+    independente do modo" (seção 1), que até então não tinha um mecanismo
+    de exibição definido
+  - Acesso fora de qualquer Período específico (ex: a partir da tela
+    inicial do app), com filtro padrão de intervalo de data corrida —
+    início do mês atual até hoje (ex: se hoje é 05/09, carrega de 01/09 a
+    05/09)
+
+- **Painel de filtro explícito e combinável**, no estilo comum em telas de
+  listagem de produtos financeiros (ex: filtrar por múltiplas categorias e
+  múltiplas tags simultaneamente, não apenas herdar o filtro de um total já
+  calculado):
+  - Filtro por categoria (seção 5) — múltipla escolha
+  - Filtro por tag (seção 3) — múltipla escolha; tag já era prevista como
+    "metadado para filtro e relatório futuro", este é o mecanismo concreto
+  - Filtro por intervalo de data (data início/fim) — ver decisão de
+    modelo abaixo
+
+- **Modelo de filtro por data, decisão adiada:** dois cenários conceituais
+  foram considerados, sem escolha fechada:
+  1. Filtrar diretamente pelo campo de data da movimentação
+     (`data_movimentacao between X and Y`). Consequência aceita: uma
+     movimentação sem data preenchida fica fora de qualquer resultado
+     filtrado por data — sem alternativa, dado que não há data para
+     comparar
+  2. Filtrar pelos Períodos cujo intervalo (`data_inicio`/`data_fim`)
+     cruza com o intervalo escolhido, trazendo todas as movimentações
+     desses Períodos (não pela data individual do item). Consequência:
+     uma movimentação com data fora do intervalo escolhido pode aparecer
+     no resultado, se pertencer a um Período que cruza esse intervalo —
+     comportamento previsível uma vez explicado, mas potencialmente
+     confuso à primeira vista
+  Preferência registrada pelo Cenário 1, condicionada à mudança de UX
+  abaixo (sem ela, o Cenário 1 teria fricção real na prática de uso).
+  Filtro por data e filtro por Período/Fluxo/Mês (pontos de acesso acima)
+  são mutuamente exclusivos, nunca combinados na mesma consulta — quando
+  o usuário escolhe um intervalo de data, ele substitui o filtro
+  estrutural, não se soma a ele.
+
+### Facilitação de preenchimento de data, para viabilizar o filtro por data
+Ao criar uma nova movimentação, o campo de data vem pré-preenchido com a
+data atual (editável livremente, inclusive para qualquer data passada ou
+futura), em vez de vazio por padrão. Um controle explícito (ex: botão
+"limpar data") permite deixar o campo vazio deliberadamente, mantendo a
+flexibilidade de não exigir data — mas o padrão passa a ser preencher, não
+omitir.
+
+Motivação: hoje, no bloco de notas, a ausência de data em quase todas as
+anotações não é escolha deliberada, é consequência do esforço adicional de
+digitar uma data por item. Um campo vazio por padrão replicaria esse
+mesmo atrito no app; um campo pré-preenchido inverte o padrão — o esforço
+passa a ser remover a data (raro) em vez de adicionar (frequente, hoje
+evitado por preguiça). Isso torna o Cenário 1 do filtro por data (acima)
+viável na prática, sem exigir do usuário digitação manual de data para
+cada movimentação.
+
 ### Terceira visão: navegação por calendário (opcional, baixa prioridade)
 Cada item do fluxo já tem uma data (seção 3), o que permitiria uma terceira
 forma de navegar pelos mesmos dados: uma visão de calendário onde o usuário
@@ -686,6 +777,13 @@ poucos gastos por dia, muitos dias sem nenhum item, o que tornaria a
 navegação dia-a-dia mais vazia do que útil. Buscar por data já é possível
 na lista detalhada padrão. Fora do MVP e de baixa prioridade — não
 descartada, mas sem motivo para priorizar frente a outras visões.
+
+**Diferença em relação à tela consolidada de movimentações (acima):** são
+conceitos distintos, mesmo compartilhando a ideia de "data". A navegação
+por calendário é granularidade de **um dia por vez** (seleciona um dia,
+vê só aquele dia, navega dia a dia). A tela consolidada de movimentações é
+lista ampla com filtro livre de intervalo — sem essa restrição de exibir
+só um dia por consulta.
 
 ---
 
@@ -885,6 +983,21 @@ todo o histórico.
 
 ## 9. Cartões de crédito e faturas
 
+### Cartão é entidade de nível de fatura, não de peça física
+Um Cartão, no modelo de dados, representa **a fatura consolidada de uma
+instituição** — não cada cartão físico ou virtual que o usuário usa no
+dia a dia. É comum ter múltiplos cartões físicos/virtuais do mesmo banco
+(ex: um físico, um virtual para compras online, outro para assinaturas),
+mas todos eles compõem a **mesma fatura** ao final do mês. O que importa
+para o modelo é a fatura, não o instrumento de plástico/virtual usado para
+gerar a compra. Por isso, "múltiplos cartões" no app significa múltiplas
+faturas distintas (uma por instituição/conta de cartão), não uma entrada
+por cada cartão físico ou virtual que o usuário possui. Isso já é
+consistente com os atributos definidos abaixo (data de fechamento e
+vencimento são propriedades de fatura, não de plástico) — esta seção só
+torna essa interpretação explícita, para não ser confundida na
+implementação.
+
 ### Requisitos
 - O app suporta múltiplos cartões de crédito
 - Cada cartão tem data de fechamento e data de vencimento configuráveis
@@ -893,7 +1006,8 @@ todo o histórico.
 - Uma compra no crédito pode ter uma caixinha vinculada para reserva do valor
   (o usuário separa o dinheiro na hora da compra, para resgatar na fatura)
 - Compras parceladas são registradas com número de parcelas; cada parcela
-  aparece na fatura do mês correspondente automaticamente
+  aparece na fatura do mês correspondente automaticamente (ver "Cálculo do
+  valor de cada parcela" abaixo para o algoritmo de divisão)
 - A fatura é composta por múltiplas fontes: resgates de caixinhas + complemento
   da conta corrente
 - O app calcula automaticamente quanto falta complementar após os resgates
@@ -905,7 +1019,187 @@ todo o histórico.
 
 ### Observação de comportamento real
 Compras parceladas do cartão têm o número de parcela rastreado manualmente
-hoje. O app deve fazer esse rastreamento automaticamente.
+hoje, incluindo o ajuste do valor da parcela quando a divisão não é exata
+— o usuário precisa lembrar de corrigir isso a cada mês, com risco real de
+esquecimento (ex: repetir o valor da parcela 4 por dois meses seguidos). O
+app deve fazer esse rastreamento e cálculo automaticamente.
+
+### Data obrigatória para itens de categoria Crédito
+Diferente da regra geral do app (data é metadado opcional para a maioria
+dos itens, seção 3), **compras no crédito exigem data obrigatória**. A
+atribuição de uma compra à fatura correta depende matematicamente da data
+da compra comparada à data de fechamento do cartão (ver algoritmo abaixo)
+— sem data, não há como calcular a fatura de destino, não é limitação de
+UX, é impossibilidade lógica do cálculo. Esta é uma exceção justificada
+pela natureza do dado, na mesma linha de outras exceções já documentadas
+(ex: fatura sempre derivada, nunca fixa). As demais categorias de item
+continuam com data opcional.
+
+### Algoritmo de atribuição de compra à fatura
+O documento já estabelecia que toda compra no crédito "já sabe a qual
+fatura pertence, baseado na data da compra e nas datas de fechamento/
+vencimento do cartão" (ver seção sobre fatura como recorrente), mas sem
+detalhar a regra exata de comparação. Regra: uma compra pertence à
+primeira fatura cujo fechamento ocorre no mesmo dia ou depois da data da
+compra — comparação relativa ao dia de fechamento configurado do cartão,
+não ao mês calendário.
+
+```
+Se dia_da_compra <= dia_de_fechamento (do mês corrente):
+    a compra entra na fatura que fecha neste mês
+Senão:
+    a compra entra na fatura que fecha no mês seguinte
+```
+
+Exemplo, com cartão de fechamento dia 18 e vencimento dia 24:
+- Compra em 17/03 → fatura que fecha 18/03 (vence 24/03)
+- Compra em 18/03 (no próprio dia do fechamento) → **regra ainda não
+  validada com fontes confiáveis, ver ressalva abaixo**
+- Compra em 19/03 → fatura que fecha 18/04 (vence 24/04), já no mês
+  seguinte
+
+**Ressalva sobre o caso de borda (compra no dia exato do fechamento):**
+duas buscas informais trouxeram respostas contraditórias — uma sugerindo
+que a compra no dia do fechamento entra na fatura atual, outra sugerindo
+que entra já na próxima (com a complicação adicional de que isso pode
+depender do horário em que o banco processa o fechamento naquele dia).
+Nenhuma das duas foi validada com rigor suficiente para fechar a regra —
+ver `prompts/10-pesquisa-atribuicao-fatura.md` para a pesquisa aprofundada
+pendente antes de fixar esse detalhe do algoritmo. Até essa pesquisa ser
+feita e revisada, o comportamento exato no dia do fechamento permanece em
+aberto; o restante do algoritmo (antes e depois do dia de fechamento) não
+depende dessa resposta e pode ser implementado normalmente.
+
+### Tela dedicada de cartões (pós-MVP)
+Além da tela de movimentações (seção 4), que organiza compras no crédito
+por recorte de tempo (fluxo/período/mês), uma tela própria organiza pelo
+eixo do **instrumento de pagamento**, atravessando todo o histórico sem
+recorte de período — as duas se complementam, nenhuma substitui a outra
+(mesmo princípio das visões consolidadas cruzando entidades já previsto
+para carteiras de investimento, seção 21).
+
+- **Lista de cartões**: cada cartão exibido com identidade visual
+  personalizada (não genérica), indicando a instituição — mesmo padrão já
+  sugerido para carteiras de investimento
+  (`docs/sugestoes-ui-navegacao.md`, "Personalização visual de carteiras")
+- Tocar num cartão abre a lista de compras feitas com ele, **separada por
+  toggle entre "Compras à vista" e "Parcelamentos"** — evita que umain
+  compra parcelada antiga se perca numa lista cronológica longa dominada
+  por compras à vista mais recentes (padrão observado em apps bancários)
+- Compras parceladas exibidas pelo **valor total da compra original**, não
+  pelo valor de uma parcela isolada — resolve a lacuna já identificada de
+  não haver hoje nenhum lugar que mostre o valor total de uma compra
+  parcelada, só o valor de cada parcela dentro da fatura onde ela aparece
+- Ordenação padrão por data, decrescente (mais recente no topo), mesmo
+  princípio já adotado para a tela de movimentações (seção 4). Compras sem
+  data preenchida não se misturam com as que têm data — um controle
+  separado (ex: toggle ou seção própria) alterna a exibição entre "com
+  data" e "sem data cadastrada"
+- Para compras sem data, no lugar onde a data apareceria, exibe-se o
+  mês/ano da fatura à qual a compra pertence (ex: "03/2026") — esse dado
+  sempre existe, garantido pela própria modelagem (toda compra no crédito
+  pertence a uma fatura específica), diferente de uma movimentação
+  genérica qualquer, que pode não ter nenhum vínculo de período claro
+
+**Fora do MVP:** o MVP já garante que a compra é registrada corretamente,
+a parcela é calculada certa (seção "Cálculo do valor de cada parcela") e
+aparece na fatura certa — essa tela é uma camada adicional de visualização
+sobre dado que já estará correto, não um requisito para o objetivo central
+do MVP (fechar o mês sem o bloco de notas). A separação à vista/parcelado
+só se torna dolorosa com histórico longo, o que não é um problema
+perceptível no início de uso do app.
+
+### Entidade própria para definição do parcelamento e "Total em Parcelamentos Futuros" (pós-MVP)
+Ponto em aberto: um dado que apps de banco costumam exibir é o total ainda
+a pagar somando todas as parcelas pendentes de todas as compras
+parceladas em aberto (ex: "Total em Parcelamentos Futuros").
+
+**Por que não é uma soma direta de Itens futuros:** o app cria Períodos e
+materializa Itens sob demanda, à medida que o usuário navega/chega neles
+(seção 1, "Criação de período: automática, sem perguntar"). Uma compra
+parcelada em 11x tem sua parcela 1 materializada como Item na fatura
+atual, mas as parcelas 2 a 11 dependem de Períodos futuros que ainda não
+existem como registro no banco. Somar `Item WHERE periodo_futuro` traria
+resultado incompleto, porque a maioria desses Itens futuros simplesmente
+não foi criada ainda.
+
+**Caminho viável:** criar uma entidade própria e persistente para a
+definição do parcelamento (ex: `CompraParcelada`), separada dos Itens que
+vão sendo materializados período a período — mesmo padrão já usado para
+Recorrentes (seção 4, "cópia no momento da criação, não FK viva": o item
+materializado carrega uma referência histórica à definição, mas a
+definição em si vive à parte). Essa entidade guardaria valor total da
+compra, número de parcelas e data da primeira parcela; o valor de cada
+parcela já é resolvido pelo algoritmo de divisão em centavos com ajuste
+de resto (seção "Cálculo do valor de cada parcela").
+
+Com essa entidade, o total futuro é derivado matematicamente (`valor_total
+− soma das parcelas já materializadas`, ou equivalente por parcelas
+restantes × valor da parcela, considerando o ajuste do resto) — não
+depende de Períodos futuros existirem ou não no banco.
+
+**Decisão ainda aberta, a resolver quando esta entidade for desenhada:** o
+que conta como "parcela futura" — parcela com data de vencimento ainda não
+alcançada, ou parcela cujo Item ainda está com estado `pendente` (seção
+3)? São noções diferentes: uma parcela com data já vencida, mas cujo Item
+o usuário esqueceu de marcar como `realizado`, é "passada" por data mas
+"pendente" por estado. Apps de banco calculam por data de cobrança (é o
+que o banco de fato sabe fazer); dentro deste app, onde o estado do
+checkbox é controlado manualmente pelo usuário, qual das duas noções é
+mais fiel ao uso real ainda não foi decidido.
+
+### Cálculo do valor de cada parcela
+Quando o valor total da compra não é divisível de forma exata pelo número
+de parcelas (ex: R$ 300,00 em 11 parcelas), a divisão gera um resultado com
+mais de duas casas decimais. O ajuste segue o padrão real usado por
+instituições financeiras — não distribuir a fração igualmente, e sim
+concentrar a diferença numa única parcela:
+
+1. Calcular a divisão em **centavos inteiros** (seção 23 — nunca em ponto
+   flutuante): `valor_total_centavos / numero_parcelas`, truncado
+   (divisão inteira)
+2. O resto da divisão (`valor_total_centavos % numero_parcelas`) é somado
+   a **uma única parcela** — nunca distribuído fracionadamente entre
+   várias parcelas
+3. Todas as demais parcelas recebem o valor da divisão truncada,
+   igualmente
+
+Exemplo: R$ 300,00 (30000 centavos) em 11 parcelas → `30000 / 11 = 2727`
+(centavos), resto `30000 % 11 = 3`. Dez parcelas de R$ 27,27, e uma parcela
+de R$ 27,27 + R$ 0,03 = R$ 27,30. A soma das 11 parcelas bate exatamente
+com os R$ 300,00 originais.
+
+**Em qual parcela o resto é aplicado (primeira ou última) é configurável
+pelo usuário, por compra — não uma regra fixa do app.** A convenção varia
+entre instituições financeiras (algumas ajustam a primeira parcela, outras
+a última), e o usuário usa cartões de bancos diferentes — travar uma única
+regra geraria divergência sistemática toda vez que o banco real da compra
+usar a convenção contrária. Ao registrar uma compra parcelada, o usuário
+escolhe se o ajuste vai na primeira ou na última parcela, replicando o que
+vê no extrato real daquele cartão específico.
+
+### Mecanismo de UI para a escolha de primeira/última parcela: campo condicional, sem valor padrão pré-selecionado
+O campo de escolha (Primeira parcela | Última parcela) não fica sempre
+visível no formulário de compra parcelada — apareceria como ruído na
+maioria das compras, já que a maior parte das divisões de parcela não
+gera resto (ex: R$ 300,00 em 3x, 5x ou 6x são divisões exatas). Em vez
+disso, o campo é **reativo e condicional**: assim que o usuário preenche
+valor total e número de parcelas, um cálculo em tempo real detecta se há
+resto; só quando há resto, o campo de escolha aparece dinamicamente no
+formulário. Mesmo padrão de campo condicional já usado no app para "valor
+desconhecido" na composição de gasto (seção 10: "quando há dois ou mais
+itens desconhecidos, o campo total se torna editável").
+
+**O campo aparece sem nenhuma opção pré-selecionada, e é obrigatório
+(`required`) enquanto visível.** Um valor padrão pré-marcado (ex:
+"Primeira parcela" já vindo marcado) criaria risco real de o usuário
+preencher valor e parcelas e confirmar o formulário sem notar que o campo
+apareceu — resultando numa escolha efetiva, com consequência real em
+faturas futuras, feita silenciosamente, sem consentimento consciente.
+Sem pré-seleção e como campo obrigatório, a validação do formulário
+bloqueia a submissão até que o usuário escolha explicitamente — a
+atenção é forçada para o campo exatamente no momento em que a decisão
+importa, sem depender de o usuário notar por conta própria.
 
 ### Fatura paga por débito automático sem composição prévia
 A fatura pode ser debitada automaticamente antes de o usuário ter organizado
@@ -965,12 +1259,50 @@ que são todos a mesma coisa:
 - O total das fontes deve bater com o valor do gasto
 - O complemento final (diferença entre o total das fontes e o valor do gasto)
   é calculado automaticamente
+
+### O Complemento é o mecanismo de "quanto falta", não uma barra de progresso separada
+Não existe (nem é necessário) um elemento de UI adicional mostrando "soma
+parcial das fontes até agora" comparado ao total, tipo barra de progresso
+ou contador "200 de 1000, faltam 800" — o próprio **Complemento**, já
+calculado automaticamente (acima), *é* a resposta a "quanto falta". Ao
+adicionar duas fontes de R$ 100,00 numa composição de R$ 1.000,00, o
+Complemento já aparece como uma linha própria na lista de fontes, com
+valor R$ 800,00 — comunicando diretamente que, com os dois resgates já
+registrados, ainda falta arranjar R$ 800,00 para cobrir o restante. A
+soma sempre "bate" com o total por construção (o Complemento se ajusta
+para fechar a diferença), não porque o usuário precisa conferir
+visualmente se uma soma parcial já atingiu o alvo.
+
+A calculadora embutida (seção 18) é ferramenta auxiliar para contas
+incidentais durante o preenchimento de uma fonte específica (ex: dividir
+um valor entre duas fontes) — não é o mecanismo de acompanhamento de
+progresso da composição, que já é resolvido pelo Complemento.
 - Uma composição pode ter várias fontes vinculadas a aportes diferentes da
   mesma carteira (própria ou de terceiro) — a granularidade é por aporte,
   não por carteira (ver seção sobre múltiplos aportes abaixo)
 - O pagamento de fatura é apenas um dos contextos onde uma Explicação de
   Gasto é usada — a mesma entidade serve para qualquer gasto de valor
   significativo que precise de detalhamento de composição
+
+### Fatura (o que foi comprado) e Explicação de Gasto da fatura (de onde vem o dinheiro): totais coincidentes, conceitos distintos
+Duas perguntas diferentes sobre o mesmo valor de fatura, facilmente
+confundidas por tratarem do mesmo número:
+- **Fatura** (seção 9) — lista as **compras** que geraram aquele valor
+  (ex: "Compra X R$ 100,00", ou uma parcela específica de uma compra
+  parcelada). Responde "o que eu comprei que resultou nesse total?"
+- **Explicação de Gasto da fatura** (esta seção) — lista as **fontes detoggle entre "Compras à vista" e "Parcelamentos"**
+  pagamento**, isto é, de onde saiu o dinheiro para pagar aquele total
+  (ex: "R$ 100,00 (Cx. Fatura [Compra X])"). Responde "de onde vem o
+  dinheiro que paga esse total?"
+
+Os dois totais **coincidem em valor** (o total da fatura é o que a
+Explicação de Gasto precisa somar para fechar o pagamento), mas são
+listas de itens diferentes, com nomes diferentes mesmo quando se referem
+à mesma compra original — a fatura referencia a compra ("Compra X"), a
+fonte referencia de onde o dinheiro saiu para pagá-la ("Cx. Fatura
+[Compra X]"). Nenhuma das duas é derivada automaticamente da outra sem
+que o usuário (ou o vínculo automático descrito abaixo) estabeleça a
+conexão entre uma compra específica e a fonte que a paga.
 
 ### Cruzamento automático de dados
 Toda movimentação tem origem e destino — ambos devem ser atualizados
@@ -986,6 +1318,113 @@ automaticamente, sem cópia manual. Exemplos:
   automaticamente como entrada do período seguinte
 - **Composição de fatura** → os resgates de caixinhas vinculadas aparecem
   automaticamente como fontes do pagamento, com o complemento calculado
+  (ver mecanismo exato abaixo)
+
+### Mecanismo do vínculo automático: etiqueta na compra, não transferência automática de dinheiro
+O vínculo entre uma compra e a caixinha que vai pagá-la é uma **etiqueta/
+decisão** estabelecida no momento da compra ("este gasto será pago por
+esta caixinha") — não uma movimentação de dinheiro em si, e não dispara
+nenhuma transferência automaticamente. São três eventos distintos, cada
+um só acontece por ação deliberada do usuário:
+
+1. **Vincular a caixinha à compra** (a etiqueta) — feito no momento em
+   que a compra é registrada. Não move dinheiro, só registra a intenção
+2. **Depositar dinheiro na caixinha** — um Item normal de algum Fluxo,
+   igual a qualquer outro aporte em caixinha (seção 7). Pode acontecer na
+   hora da compra, semanas depois, ou nunca antes do resgate — é ação
+   manual e independente, o vínculo da etapa 1 não a cria
+3. **Resgatar da caixinha para pagar a fatura** — também uma movimentação
+   real e manual (ou semi-assistida pela composição da fatura), que
+   consome o saldo já depositado
+
+O que é automático é só a etapa 3 ser **informada pela** etiqueta da
+etapa 1: quando a fatura é composta, o app já sabe de qual caixinha
+resgatar para cada compra vinculada, sem exigir que o usuário revincule
+manualmente naquele momento. A etiqueta não cria, por si só, nenhum
+depósito nem resgate — apenas direciona a composição automática quando
+ela ocorrer.
+
+**O vínculo é por parcela-item, não pela compra parcelada como um todo.**
+Numa compra parcelada (ex: R$ 1.200,00 em 12x de R$ 100,00), vincular a
+caixinha à *definição* da compra inteira seria incorreto — resgataria
+(ou tentaria resgatar) o valor total de uma vez, quando a intenção real é
+resgatar só o valor de uma parcela por mês. Como cada parcela já é
+materializada como um Item próprio, mês a mês (seção "Entidade própria
+para definição do parcelamento"), o vínculo com caixinha é uma
+propriedade de cada Item-parcela individualmente, não da definição do
+parcelamento. Isso já se encaixa na modelagem existente sem exigir
+estrutura nova — só reforça que o vínculo vive no nível certo.
+
+Compras sem caixinha vinculada não geram fonte automática — entram no
+complemento da conta corrente (calculado automaticamente, seção 9), a
+menos que o usuário vincule uma fonte manualmente depois, na composição
+da fatura.
+
+### Momento de geração da fonte, e por que ela é sempre sugestão editável
+A fonte vinculada a uma compra não é gerada na criação do Período —
+segue o mesmo princípio de criação sob demanda já usado para o Período em
+si (seção 1): é gerada **na primeira vez que o usuário abre a Explicação
+de Gasto daquela fatura**. Se a composição nunca for aberta, a fonte
+nunca precisa existir — evita trabalho antecipado sobre algo que talvez
+nunca seja consultado.
+
+Como qualquer recorrente pré-carregado (seção 4), a fonte gerada é
+**sempre sugestão editável, nunca resgate já efetivado**. O usuário pode
+desmarcar o vínculo se decidir, na hora de compor a fatura, pagar aquela
+compra de outra forma (ex: direto do saldo da conta, sem passar pela
+caixinha) — a etiqueta feita no momento da compra não obriga nada, só
+propõe um ponto de partida.
+
+### Vínculo e depósito são fluxos independentes no tempo — saldo insuficiente não é bloqueio
+A etiqueta (vínculo compra↔caixinha) e o depósito real de dinheiro na
+caixinha não precisam ocorrer em nenhuma ordem específica, nem estar
+sincronizados a tempo da composição da fatura:
+- O usuário pode depositar o valor da compra na caixinha antes, durante
+  ou depois de vincular a etiqueta — são ações manuais e independentes
+- Caixinhas de reserva tipicamente têm saldo próprio e rendem (ex: CDB de
+  liquidez diária), então resgatar para cobrir uma compra nova não
+  depende de ter feito **aquele** depósito específico primeiro — o saldo
+  já acumulado de aportes anteriores e rendimento pode cobrir a fonte
+  sugerida normalmente
+- Se, num caso raro, o saldo realmente for insuficiente para a fonte
+  sugerida, isso não bloqueia a composição da fatura — como a fonte é
+  sempre sugestão editável (seção acima), o usuário simplesmente desmarca
+  o vínculo e resolve manualmente (ex: pagando direto do saldo da conta),
+  sem exigir nenhuma trava ou validação impeditiva do app
+
+### Composição de fatura: qualquer combinação de fontes é válida, sem mínimo obrigatório
+A "Explicação de Gasto" já é modelada como uma lista de fontes livre
+(seção 10, "uma lista de **fontes**"), sem quantidade mínima ou máxima, e
+o complemento final é sempre calculado automaticamente sobre o que faltar
+— isso já cobre qualquer combinação real de uso, sem necessidade de regra
+adicional específica para fatura:
+- Nenhum resgate de caixinha, fatura paga inteiramente por complemento da
+  conta corrente — já suportado, é só o caso onde a lista de fontes de
+  caixinha fica vazia e o complemento absorve o valor inteiro
+- Só a Cx. Fatura como fonte, sem outras caixinhas — caso mais comum,
+  já suportado
+- Múltiplas caixinhas diferentes, não só a Cx. Fatura — já suportado
+  explicitamente ("qualquer carteira ou caixinha pode ser vinculada como
+  fonte de um item da fatura", seção "Fontes de pagamento de fatura não
+  se limitam a uma caixinha específica")
+
+Nenhuma modelagem nova é necessária para esses cenários — a flexibilidade
+já existe porque a fatura é só um dos usos possíveis da entidade genérica
+Explicação de Gasto, não um caso especial com regras próprias de
+composição obrigatória.
+
+### Visualizar as compras de uma fatura específica, não só suas fontes (ponto em aberto)
+A Explicação de Gasto de uma fatura já tem alternância documentada entre
+Visão detalhada e Visão agrupada (seção acima), mas ambas mostram as
+**fontes** (de onde vem o dinheiro). Ainda não está decidido se, dentro
+dessa mesma tela, também deveria existir uma alternância para ver as
+**compras** que geraram aquele total (o que foi comprado, não de onde
+vem o dinheiro para pagar) — um segundo eixo de visão (Fontes vs.
+Compras), específico da Explicação de Gasto do tipo Fatura, complementar
+à tela dedicada de cartões (pós-MVP, que é ampla, atravessa todo o
+histórico) e à tela de movimentações (que é por recorte de tempo, não
+por fatura específica). Registrado como direção a considerar quando o
+design de telas da composição de fatura for detalhado — não decidido.
 
 ### Fontes de pagamento de fatura não se limitam a uma caixinha específica
 Qualquer carteira ou caixinha pode ser vinculada como fonte de um item da
@@ -993,7 +1432,7 @@ fatura, independente do nome ou propósito original da carteira.
 
 ### Visão detalhada vs. visão agrupada por carteira de origem
 Uma composição de fatura pode ter vários itens vinculados à mesma carteira
-de origem (ex: internet, um jogo e outro jogo, todos saindo da Cx. Fatura).
+de origem (ex: Compra X, Compra Y e Compra Z, todos saindo da Cx. Fatura).
 Cada item é registrado individualmente para manter o controle de que compõe
 o total, mas o usuário precisa alternar entre duas visões da mesma composição:
 
@@ -1536,13 +1975,18 @@ bloco de notas. Com base nas notas reais, o mínimo necessário é:
 - Controle de saldo das contas secundárias
 - Carteiras com aportes individuais, datas e resgates
 - Composição de fatura (múltiplas fontes)
+- Parcelamento automático de crédito (cálculo do valor de cada parcela e
+  distribuição automática nas faturas seguintes — ver seção 9, "Cálculo do
+  valor de cada parcela"). Movido para o MVP: é exatamente o tipo de ajuste
+  manual recorrente (lembrar de corrigir a parcela de uma compra a cada
+  mês) que o app existe para eliminar — esquecer gera erro real hoje no
+  bloco de notas (ex: listar a parcela 4 por dois meses seguidos)
 - Persistência local (Room), offline-only
 - Bloqueio de app por PIN ou biometria (sem conta/login)
 
 **Deixar para versões seguintes:**
 - Notificações
 - Múltiplos cartões com fechamento/vencimento automático
-- Parcelamento automático de crédito
 - Suporte completo a créditos/débitos mistos em fatura por estorno (caso raro)
 - Gráficos e análise
 - Exportação PDF

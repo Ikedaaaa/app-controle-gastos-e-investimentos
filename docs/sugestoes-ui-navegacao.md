@@ -32,6 +32,25 @@ A definir/revisar quando a identidade visual do app for desenhada.
 - Alternativa: fotos padrão do sistema, com curadoria melhor do que a
   observada em outros apps (ex: Nubank)
 
+## Identidade visual de cartões
+
+Mesmo padrão de "Personalização visual de carteiras" (acima), aplicado a
+Cartão: na tela dedicada de cartões (pós-MVP, `analise-requisitos.md`
+seção 9), cada cartão exibido com aparência que imita um cartão real —
+não um ícone genérico — indicando visualmente a instituição à qual aquela
+fatura pertence. O requisito funcional (a tela existir, com a lista de
+cartões) já está no documento de requisitos; esta nota é só sobre o
+estilo visual específico do cartão em si.
+
+## Toggle à vista/parcelado dentro de um cartão
+
+Referência de estilo para a separação entre compras à vista e compras
+parceladas dentro da tela de um cartão específico (requisito funcional já
+documentado em `analise-requisitos.md`, seção 9, "Tela dedicada de
+cartões"): um toggle/switch no topo da lista de compras (ex: "Compras à
+vista | Parcelamentos"), alternando o conteúdo da lista abaixo — padrão
+observado em aplicativo de banco.
+
 ## Ícones por instituição financeira
 
 - Ao cadastrar uma instituição financeira associada a um investimento,
