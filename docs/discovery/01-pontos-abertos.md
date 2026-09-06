@@ -59,6 +59,25 @@ isolados é apontada como de baixo risco, mas "a lista exata do que pode ou
 não ser excluído precisa de análise própria quando o design entrar em
 detalhe — registrado aqui como direção, não como decisão fechada".
 
+### 12. Visualizar as compras de uma fatura específica, não só suas fontes
+**Origem:** Seção 9-10 — "Visualizar as compras de uma fatura específica,
+não só suas fontes (ponto em aberto)"
+
+**Resumo neutro (para prompts que geram alternativa de UI, ex: `06`):** a
+Explicação de Gasto de uma fatura já tem alternância entre Visão detalhada
+e Visão agrupada, mas ambas mostram apenas as fontes de pagamento (de onde
+vem o dinheiro). Não está decidido se, dentro da mesma tela, deveria
+existir uma segunda alternância para ver as compras que geraram aquele
+total (o que foi comprado, não de onde vem o dinheiro).
+
+**Contexto completo:** "Ainda não está decidido se, dentro dessa mesma
+tela, também deveria existir uma alternância para ver as **compras** que
+geraram aquele total... um segundo eixo de visão (Fontes vs. Compras),
+específico da Explicação de Gasto do tipo Fatura, complementar à tela
+dedicada de cartões (pós-MVP...) e à tela de movimentações... Registrado
+como direção a considerar quando o design de telas da composição de
+fatura for detalhado — não decidido."
+
 ---
 
 ## Originados em `docs/sugestoes-ui-navegacao.md`

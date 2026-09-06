@@ -539,3 +539,58 @@ ou navegação para uma tela cheia, componentes padrão do Compose) tem
 esforço só um pouco maior que o scroll simples e devolve ao usuário o
 controle sobre quando trocar de contexto, em vez do app decidir isso por
 ele via necessidade de rolagem.
+
+---
+
+## 12. Visualizar as compras de uma fatura específica, não só suas fontes
+
+**Problema (resumo neutro):** a Explicação de Gasto de uma fatura já
+alterna entre Visão detalhada e Visão agrupada, mas ambas mostram só as
+fontes de pagamento. Não está decidido se deveria existir também uma
+visão das compras que geraram o total.
+
+### Alternativa A — Segunda aba dentro da mesma tela (referência externa)
+Padrão de abas já usado no ponto 2 deste documento (breakdown do
+resumo): duas abas no topo da Explicação de Gasto — "Fontes" (o que já
+existe, de onde vem o dinheiro) e "Compras" (a lista das compras que
+compõem o total). Trocar de aba não perde o contexto da fatura em edição,
+só troca qual lista é exibida abaixo.
+
+### Alternativa B — Uma lista só, com indicação inline de fonte vinculada (minimalismo extremo)
+Sem alternância nenhuma: a lista de compras da fatura já aparece por
+padrão (é o dado mais direto — "o que comprei"), e cada compra mostra,
+como texto secundário, a fonte vinculada quando existir (ex: "Compra X —
+R$ 100,00 — Cx. Fatura"). Resolve as duas perguntas ("o que comprei" e
+"de onde vem o dinheiro") numa lista só, sem exigir navegação ou toggle.
+
+### Alternativa C — Compras como visão padrão, fontes como aprofundamento (persona)
+O usuário já demonstrou, ao longo desta conversa, que sua primeira
+pergunta sobre a fatura é "o que eu comprei que resultou nesse total?" —
+a pergunta sobre origem do dinheiro (fontes) vem depois, e é mais
+relevante quando ele já decidiu como vai pagar. Nessa alternativa, a
+tela abre por padrão na visão de compras (não fontes), e um botão
+secundário leva à visão de fontes/composição — inverte a prioridade
+padrão de qual das duas visões é a primeira que o usuário vê.
+
+### Avaliação
+
+| Alternativa | Clareza de uso | Esforço de implementação |
+|---|---|---|
+| A — Segunda aba (Fontes / Compras) | 5 | 5 |
+| B — Lista única com fonte inline | 4 | 4 |
+| C — Compras como padrão, fontes como aprofundamento | 4 | 5 |
+
+### Recomendação
+
+**Alternativa A.** Reaproveita exatamente o mesmo componente de abas já
+recomendado no ponto 2 (`TabRow`/`ScrollableTabRow` do Material 3),
+reduzindo o número de padrões de interação diferentes no app — trocar de
+aba já significa a mesma coisa em mais de um lugar. A Alternativa B é
+mais compacta, mas mistura duas perguntas diferentes ("o que comprei" e
+"de onde vem o dinheiro") na mesma linha, o que pode sobrecarregar a
+leitura quando a fonte tiver nome longo ou a compra tiver múltiplas
+fontes parciais. A Alternativa C tem mérito ao inverter a prioridade
+padrão, mas isso é mais uma decisão de qual aba abre primeiro do que uma
+estrutura de tela diferente — pode ser incorporada dentro da própria
+Alternativa A (definindo "Compras" como aba padrão), sem precisar de uma
+estrutura de navegação distinta.

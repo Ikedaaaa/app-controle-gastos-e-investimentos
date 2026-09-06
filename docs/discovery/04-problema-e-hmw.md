@@ -150,6 +150,19 @@ deste documento, que trata apenas dos pontos abertos listados em
 - Como poderíamos mostrar a informação essencial de um gráfico mesmo antes
   de o usuário decidir expandir ou navegar para uma tela dedicada?
 
+### 12. Visualizar as compras de uma fatura específica, não só suas fontes
+*(Origem: `analise-requisitos.md`, Seção 9-10 — `docs/discovery/01-pontos-abertos.md` ponto 12)*
+
+- Como poderíamos ajudar o usuário a ver o que compõe uma fatura (as
+  compras) sem misturar essa leitura com a explicação de onde vem o
+  dinheiro (as fontes)?
+- Como poderíamos permitir alternar entre "o que comprei" e "de onde vem o
+  dinheiro" dentro da mesma composição, sem exigir navegar para uma tela
+  totalmente diferente?
+- Como poderíamos ajudar o usuário a conferir rapidamente se o valor da
+  fatura faz sentido, olhando as compras que a formaram, antes de se
+  preocupar com a origem do pagamento?
+
 ---
 
 **Nota sobre a Etapa 3 (descarte do óbvio):** HMWs cuja única resposta
