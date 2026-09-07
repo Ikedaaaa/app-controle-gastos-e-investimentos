@@ -163,6 +163,23 @@ deste documento, que trata apenas dos pontos abertos listados em
   fatura faz sentido, olhando as compras que a formaram, antes de se
   preocupar com a origem do pagamento?
 
+### 13. Extensões pós-MVP da tela consolidada de movimentações
+*(Origem: `analise-requisitos.md`, Seção 4 — `docs/discovery/01-pontos-abertos.md` ponto 13)*
+
+- Como poderíamos ajudar o usuário a chegar na tela de movimentações a
+  partir de diferentes pontos de partida (um Fluxo específico, um Período
+  inteiro, um Mês) sem exigir que ele aprenda um caminho de navegação
+  diferente para cada caso?
+- Como poderíamos permitir que o usuário combine critérios de filtro
+  (categoria, tag, data) sem sobrecarregar a tela com controles visíveis
+  o tempo todo?
+- Como poderíamos ajudar o usuário a perceber quais filtros estão ativos
+  na lista de movimentações que ele está vendo, sem precisar abrir um
+  painel para confirmar?
+- Como poderíamos ajudar o usuário a filtrar movimentações por data de um
+  jeito que faça sentido tanto para quem pensa numa data específica quanto
+  para quem pensa num Período inteiro?
+
 ---
 
 **Nota sobre a Etapa 3 (descarte do óbvio):** HMWs cuja única resposta
