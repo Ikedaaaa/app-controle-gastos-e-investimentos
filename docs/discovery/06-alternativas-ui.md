@@ -4,7 +4,7 @@
 > `docs/discovery/04-problema-e-hmw.md` (perguntas HMW a responder) e
 > `docs/discovery/02-panorama-solucoes-existentes.md` (referências de
 > mercado). Para os pontos que têm divisão "Resumo neutro" / "Contexto
-> completo" no documento de origem (pontos 1, 6, 7, 9 e 10), as alternativas
+> completo" no documento de origem (pontos 1, 6, 7, 9, 10 e 12), as alternativas
 > abaixo foram desenhadas a partir apenas do resumo neutro — nenhuma delas
 > reaproveita as sugestões específicas que estavam registradas na parte de
 > contexto completo (hex de cor, ordem sugerida, ideias já citadas etc.).
@@ -135,7 +135,7 @@ Interação mínima, zero elemento visual novo além de texto pequeno.
 ### Alternativa C — Não construir calendário dedicado agora (persona)
 Dado que o próprio documento de origem já classifica isso como baixa
 prioridade, e o usuário evita manter telas extras que competem pela atenção
-dele ("não quero dispersar... focado no contexto"), a recomendação é reduzir
+quando já está concentrado numa tarefa, a recomendação é reduzir
 para a Alternativa A (heatmap fino) e não avançar para uma tela de
 calendário completa — ela resolve "perceber concentração de gastos" sem
 exigir uma nova superfície de navegação para ele lembrar de usar.
@@ -232,9 +232,10 @@ toque). Para itens vinculados a outro dado (fatura, resgate, composição), o
 app mostra uma tela de revisão explícita listando tudo que será afetado,
 exigindo confirmação separada por item afetado antes de excluir. Dado que a
 maior frustração relatada pelo usuário é perder rastreabilidade sem
-conseguir provar de onde veio um valor (caso do resgate do Nubank), vale
-trocar velocidade por clareza total nesse cenário específico, mesmo custando
-uma tela extra.
+conseguir provar de onde veio um valor (caso real de resgate de carteira
+sem conseguir identificar depois quanto saiu de cada aporte), vale trocar
+velocidade por clareza total nesse cenário específico, mesmo custando uma
+tela extra.
 
 ### Avaliação
 
@@ -317,13 +318,13 @@ fluxo precisa diferenciar visualmente de qual cartão é cada fatura; nenhuma
 solução decidida.
 
 ### Alternativa A — Faixa de cor lateral por cartão (referência externa)
-Padrão comum em apps bancários (Nubank, Inter): cada cartão cadastrado tem
+Padrão comum em apps bancários: cada cartão cadastrado tem
 uma cor própria definida no cadastro. O item de fatura na lista mostra uma
 faixa fina (2-3px) na borda esquerda do item, na cor daquele cartão — sem
 interferir no ícone de categoria do gasto, que continua central.
 
 ### Alternativa B — Só o nome do cartão em texto (minimalismo extremo)
-Nenhum elemento visual novo: o nome curto do cartão (ex: "Nubank", "Inter")
+Nenhum elemento visual novo: o nome curto do cartão (ex: "Banco A", "Banco B")
 aparece como texto secundário, discreto, abaixo da descrição do item.
 Resolve a identificação sem introduzir cor, ícone extra ou faixa.
 
@@ -422,8 +423,8 @@ novo além dos próprios chips.
 
 ### Alternativa C — Filtro simples é suficiente para o padrão de uso (persona)
 A Alternativa B tende a se encaixar melhor: o usuário evita manter mais
-telas ou interações para lembrar ("não quero dispersar... focado no
-contexto"), e chips de filtro entregam o detalhe por classe sem exigir uma
+telas ou interações para lembrar quando já está concentrado numa tarefa,
+e chips de filtro entregam o detalhe por classe sem exigir uma
 navegação ou um gesto de expansão que pode ser esquecido. É a resposta mais
 direta ao HMW de "explorar uma classe sem perder a visão do todo" — a lista
 volta ao estado completo com um toque no chip já selecionado.
@@ -563,14 +564,19 @@ como texto secundário, a fonte vinculada quando existir (ex: "Compra X —
 R$ 100,00 — Cx. Fatura"). Resolve as duas perguntas ("o que comprei" e
 "de onde vem o dinheiro") numa lista só, sem exigir navegação ou toggle.
 
-### Alternativa C — Compras como visão padrão, fontes como aprofundamento (persona)
-O usuário já demonstrou, ao longo desta conversa, que sua primeira
-pergunta sobre a fatura é "o que eu comprei que resultou nesse total?" —
-a pergunta sobre origem do dinheiro (fontes) vem depois, e é mais
-relevante quando ele já decidiu como vai pagar. Nessa alternativa, a
-tela abre por padrão na visão de compras (não fontes), e um botão
-secundário leva à visão de fontes/composição — inverte a prioridade
-padrão de qual das duas visões é a primeira que o usuário vê.
+### Alternativa C — Vínculo visível entre compra e fonte ao trocar de aba (persona)
+A maior frustração documentada da persona não é falta de dado — é perder a
+capacidade de provar de onde veio ou para onde foi um valor específico (um
+resgate de carteira sem rastreabilidade por aporte é citado como o pior
+cenário possível pra ele). Composições com múltiplas fontes também já
+são o ponto em que ele mais hesita, a ponto de não reconhecer de primeira a
+própria lógica passada num caso mais complexo. Esta
+alternativa reforça a Alternativa A: tocar numa compra na aba "Compras"
+leva direto à(s) fonte(s) que a pagam na aba "Fontes" (destacando o item
+correspondente), e vice-versa — em vez de deixar as duas listas soltas,
+sem nenhuma conexão visual entre os itens que o usuário precise
+reconstruir de memória. Não é uma estrutura de tela nova, é um vínculo de
+navegação sobre a mesma estrutura de abas.
 
 ### Avaliação
 
@@ -578,19 +584,93 @@ padrão de qual das duas visões é a primeira que o usuário vê.
 |---|---|---|
 | A — Segunda aba (Fontes / Compras) | 5 | 5 |
 | B — Lista única com fonte inline | 4 | 4 |
-| C — Compras como padrão, fontes como aprofundamento | 4 | 5 |
+| C — Vínculo visível entre compra e fonte (reforço da A) | 5 | 4 |
 
 ### Recomendação
 
-**Alternativa A.** Reaproveita exatamente o mesmo componente de abas já
-recomendado no ponto 2 (`TabRow`/`ScrollableTabRow` do Material 3),
-reduzindo o número de padrões de interação diferentes no app — trocar de
-aba já significa a mesma coisa em mais de um lugar. A Alternativa B é
-mais compacta, mas mistura duas perguntas diferentes ("o que comprei" e
-"de onde vem o dinheiro") na mesma linha, o que pode sobrecarregar a
-leitura quando a fonte tiver nome longo ou a compra tiver múltiplas
-fontes parciais. A Alternativa C tem mérito ao inverter a prioridade
-padrão, mas isso é mais uma decisão de qual aba abre primeiro do que uma
-estrutura de tela diferente — pode ser incorporada dentro da própria
-Alternativa A (definindo "Compras" como aba padrão), sem precisar de uma
-estrutura de navegação distinta.
+**Alternativa A, reforçada por C.** O componente de abas (A) reaproveita
+exatamente o mesmo padrão já recomendado no ponto 2
+(`TabRow`/`ScrollableTabRow` do Material 3), reduzindo o número de padrões
+de interação diferentes no app. A Alternativa B é mais compacta, mas
+mistura duas perguntas diferentes ("o que comprei" e "de onde vem o
+dinheiro") na mesma linha, o que pode sobrecarregar a leitura quando a
+fonte tiver nome longo ou a compra tiver múltiplas fontes parciais. Vale
+somar o reforço da Alternativa C — destacar a fonte correspondente ao
+tocar numa compra (e vice-versa) — porque ataca diretamente o maior medo
+documentado da persona (perda de rastreabilidade), com esforço adicional
+baixo: o vínculo compra↔fonte já existe no modelo de dados, então é
+composição de lógica de navegação sobre um dado que já está disponível,
+não um dado novo a calcular. Qual aba abre por padrão (Fontes ou Compras)
+fica como decisão de design visual a resolver no detalhamento de telas,
+sem tratamento especial — nenhuma das fontes usadas para gerar as
+alternativas deste ponto (resumo neutro de `01-pontos-abertos.md` e
+persona) indica uma prioridade entre as duas visões.
+
+---
+
+## 13. Extensões pós-MVP da tela consolidada de movimentações
+
+**Problema (resumo neutro):** o MVP cobre só o drill-down simples (a tela
+de movimentações abre já filtrada, sem controles visíveis, a partir de um
+total do resumo). Não está decidido como a mesma tela ganharia, depois do
+MVP, outros pontos de acesso (Fluxo, Período, Mês, fora de qualquer
+Período) e um painel de filtro explícito combinando categoria, tag e data.
+
+### Alternativa A — Um ponto de entrada único, com filtros aplicados como chips removíveis (referência externa)
+Padrão comum em apps de finanças com filtro combinável: qualquer ponto de
+acesso (tocar um total do resumo, um Fluxo, ou abrir a tela de
+movimentações direto do menu) leva à mesma tela. O que muda é só quais
+filtros já vêm pré-aplicados, exibidos como chips removíveis no topo (ex:
+"Categoria: Mercado ✕" · "Período atual ✕"). Tocar o "✕" de um chip remove
+aquele filtro sem fechar a tela; tocar um ícone de filtro abre um painel
+para adicionar mais critérios (categoria, tag, intervalo de data). Um único
+comportamento serve tanto o caso simples (drill-down do MVP) quanto o caso
+combinado (pós-MVP).
+
+### Alternativa B — Sem painel de filtro dedicado; busca por texto sobre a lista completa (minimalismo extremo)
+Em vez de um painel com campos por categoria/tag/data, a tela de
+movimentações (acessível de qualquer ponto) tem só uma barra de busca por
+texto no topo. Digitar filtra a lista em tempo real por qualquer campo
+visível do item (descrição, categoria, tag como texto). Não introduz
+nenhum componente de filtro estruturado — reaproveita o padrão de busca já
+familiar de qualquer lista longa, ao custo de não permitir combinar
+critérios de forma explícita (ex: só "Mercado" + só "este mês" ao mesmo
+tempo, sem digitar os dois termos).
+
+### Alternativa C — Pontos de acesso como atalhos contextuais, filtro combinável como camada separada (persona)
+O usuário já demonstra, em outras decisões deste documento, preferir ver o
+dado bruto e decidir por conta própria em vez de depender de uma
+combinação automática que escolhe por ele (mesmo padrão da Alternativa C
+do ponto 4, badges separados em vez de métrica única). Aqui isso se
+traduz em manter os pontos de acesso (Fluxo, Período, Mês) como atalhos
+diretos e simples — cada um abre a tela já filtrada por aquele recorte,
+sem exigir nenhuma interação extra — e tratar o painel de filtro
+combinável (categoria + tag + data) como uma camada adicional, opcional,
+acessível a partir da mesma tela mas nunca obrigatória para o caso comum
+de "só quero ver este Período". Reduz o risco de a tela ficar mais
+complexa do que o caso de uso mais frequente exige.
+
+### Avaliação
+
+| Alternativa | Clareza de uso | Esforço de implementação |
+|---|---|---|
+| A — Chips removíveis + painel de filtro | 4 | 3 |
+| B — Busca por texto livre | 4 | 5 |
+| C — Atalhos diretos + filtro como camada opcional | 5 | 4 |
+
+### Recomendação
+
+**Alternativa C.** Os pontos de acesso (Fluxo, Período, Mês) continuam
+simples — um toque leva direto à lista já filtrada, sem exigir que o
+usuário monte nada — e o painel de filtro combinável fica disponível só
+para quem precisa de um recorte mais específico, sem se impor no caminho
+mais comum. Isso é mais barato de implementar do que a busca por texto
+livre (B), que exigiria indexar múltiplos campos para busca em tempo real
+sem oferecer combinação estruturada de critérios, e mantém a mesma
+clareza da Alternativa A (chips removíveis) sem precisar desenhar o
+componente de chip removível para o caso simples do dia a dia. A decisão
+de modelo sobre como o filtro por data deveria se comportar (data
+individual da movimentação vs. intervalo do Período) não influencia esta
+recomendação — nenhuma das três alternativas depende de resolver essa
+decisão para funcionar; fica como pendência de modelagem separada, já
+registrada em `01-pontos-abertos.md`.

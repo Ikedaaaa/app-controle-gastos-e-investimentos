@@ -87,7 +87,7 @@ progresso), colorida em duas cores — uma para "Meu", outra para "Terceiro" —
 sem nem precisar ler os números para perceber a proporção num piscar de
 olhos. Além disso, na lista principal do período, itens que pertencem a
 terceiro recebem uma marca discreta (uma faixa colorida fina na lateral
-esquerda do item, ou um badge com iniciais — "P." para Pai, por exemplo),
+esquerda do item, ou um badge com as iniciais do terceiro, por exemplo),
 mantendo a informação visível linha a linha sem exigir abrir detalhe.
 
 ### Avaliação
@@ -136,7 +136,7 @@ Dado que a ordem no app é manual e cronológica pela sequência real dos
 fatos (não pela data, que nem sempre é preenchida — conforme o panorama já
 identificou como particularidade sua), uma visão de calendário pode
 literalmente mentir sobre a ordem real dos eventos. Como ele valoriza
-precisão acima de tudo ("não quero que nem 1 centavo passe despercebido"),
+controle absoluto e granular sobre cada valor registrado,
 a alternativa mais alinhada à persona é não implementar nenhuma visão de
 calendário agora, e revisar essa decisão só se e quando o preenchimento de
 data se tornar consistente o suficiente para não distorcer a leitura.
@@ -181,7 +181,7 @@ em relação ao próprio prazo sobem na lista.
 
 ### Alternativa C — Fixar/favoritar carteira manualmente, por cima de qualquer ordenação automática (minha persona)
 Como ele valoriza controle total e não gosta de estrutura rígida imposta
-("não quero perder a liberdade"), cada carteira tem uma opção de fixar no
+sobre algo que hoje decide livremente, cada carteira tem uma opção de fixar no
 topo (ícone de pin, acessível por toque longo → menu de contexto, mesmo
 padrão já adotado em outras listas do app). Carteiras fixadas ficam sempre
 no topo, acima de qualquer ordenação algorítmica (prazo, meta ou padrão)
@@ -321,16 +321,16 @@ cartão é a fatura, sem precisar de um segundo ícone competindo por espaço.
 ### Alternativa B — Texto em vez de ícone extra (minimalismo extremo)
 Nenhum elemento visual novo: o subtítulo do item já existente passa a
 incluir o nome/apelido do cartão diretamente como texto (ex.: "Fatura •
-Nubank" ou "Fatura • Inter ••1234"). Resolve o problema sem adicionar
+Banco A" ou "Fatura • Banco B ••1234"). Resolve o problema sem adicionar
 nenhuma cor, ícone ou componente — só reaproveita o espaço de texto
 secundário que a lista já tem.
 
 ### Alternativa C — Ícone com a cor de marca do banco (referência externa: reconhecimento visual de bandeiras/bancos)
 Em vez de uma cor arbitrária escolhida na hora do cadastro, o ícone de
-fatura usa a cor oficial associada ao banco do cartão (roxo para Nubank,
-laranja para Inter, etc.), aproveitando o reconhecimento visual que o
-usuário já tem desses bancos no dia a dia — sem precisar memorizar uma cor
-nova inventada só para o app.
+fatura usa a cor oficial associada ao banco do cartão (aproveitando cores
+de marca já reconhecíveis de bancos populares), aproveitando o
+reconhecimento visual que o usuário já tem desses bancos no dia a dia —
+sem precisar memorizar uma cor nova inventada só para o app.
 
 ### Avaliação
 
