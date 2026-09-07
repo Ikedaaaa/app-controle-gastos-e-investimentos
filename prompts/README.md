@@ -55,6 +55,7 @@ Fundação (já existia antes de qualquer prompt):
 
 05 → docs/discovery/05-oportunidades-ia.md — isolado, não entra nessa cadeia
 09 → docs/discovery/09-pesquisa-calculo-rendimento.md — standalone, sem relação com os demais
+10 → docs/discovery/10-pesquisa-atribuicao-fatura.md — standalone, sem relação com os demais
 ```
 
 Pontos-chave:
@@ -71,18 +72,20 @@ Pontos-chave:
 ## Checklist de execução
 
 Marque conforme for concluindo. Para o prompt `08`, marque as sub-etapas
-conforme o mapa de sessões definido dentro do próprio arquivo.
+conforme o mapa de sessões definido dentro do próprio arquivo. Os prompts
+`09` e `10` são pesquisas técnicas standalone (ver mapa de dependências
+acima) — não seguem a ordem 1→8, por isso aparecem numa seção própria.
 
-- [ ] `01-setup.md`
-- [ ] `02-panorama-solucoes-existentes.md`
-- [ ] `03-persona.md`
-  - [ ] Coleta de mensagens brutas em `reference-files/discovery/persona-mensagens-brutas.md`
-  - [ ] Persona gerada
-- [ ] `04-problema-e-hmw.md`
-- [ ] `05-oportunidades-ia.md`
-- [ ] `06-ideacao-e-priorizacao.md`
-  - [ ] Alternativas geradas
-  - [ ] Priorização feita
+- [x] `01-setup.md`
+- [x] `02-panorama-solucoes-existentes.md`
+- [x] `03-persona.md`
+  - [x] Coleta de mensagens brutas em `reference-files/discovery/persona-mensagens-brutas.md`
+  - [x] Persona gerada
+- [x] `04-problema-e-hmw.md`
+- [x] `05-oportunidades-ia.md`
+- [x] `06-ideacao-e-priorizacao.md`
+  - [x] Alternativas geradas
+  - [x] Priorização feita
 - [ ] `07-persona-roleplay.md`
   - [ ] Role-play executado
   - [ ] Conclusões objetivas extraídas para `docs/discovery/07-conclusoes-roleplay.md`
@@ -93,6 +96,11 @@ conforme o mapa de sessões definido dentro do próprio arquivo.
   - [ ] Sessão 2 (chat novo) — design.md (Versão B)
   - [ ] Sessão 2 — tasks.md (Versão B) executadas
   - [ ] Comparação final (`prototype/COMPARACAO.md`)
+
+### Pesquisas técnicas standalone (fora da sequência 1→8)
+
+- [x] `09-pesquisa-calculo-rendimento.md`
+- [ ] `10-pesquisa-atribuicao-fatura.md`
 
 ## Onde os artefatos são salvos, e o que é versionado
 
