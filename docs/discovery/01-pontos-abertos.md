@@ -78,6 +78,26 @@ dedicada de cartões (pós-MVP...) e à tela de movimentações... Registrado
 como direção a considerar quando o design de telas da composição de
 fatura for detalhado — não decidido."
 
+### 13. Extensões pós-MVP da tela consolidada de movimentações
+**Origem:** Seção 4 — "Tela consolidada de movimentações (MVP: drill-down
+simples; demais pontos de acesso e filtros, pós-MVP)"
+
+**Resumo neutro (para prompts que geram alternativa de UI, ex: `06`):** o
+MVP cobre apenas abrir a lista de movimentações via drill-down de um total
+do resumo, já filtrada, sem controles visíveis. Não está decidido como (ou
+se) a mesma tela ganha, depois do MVP, outros pontos de acesso (ver Fluxo
+específico, ver Período inteiro, ver Mês inteiro, acesso fora de qualquer
+Período) e um painel de filtro explícito combinando categoria, tag e
+intervalo de data.
+
+**Contexto completo:** o documento lista essas extensões explicitamente
+como "registradas para não se perder (nenhuma decidida como prioridade,
+apenas direção)". Inclui também uma decisão de modelo ainda adiada sobre
+como o filtro por data deveria funcionar (filtrar pela data individual da
+movimentação vs. filtrar pelos Períodos cujo intervalo cruza a data
+escolhida) — a preferência pelo primeiro cenário está registrada, mas
+condicionada a mudanças de UX ainda não desenhadas.
+
 ---
 
 ## Originados em `docs/sugestoes-ui-navegacao.md`
@@ -159,3 +179,15 @@ de dados que representa essa vinculação entre resgate de carteira e item de
 fatura ou gasto composto". Não é uma decisão de UI/UX (como apresentar algo
 já definido), é modelagem de dados pendente — por isso não entra na lista
 principal, mas fica registrado aqui para não se perder.
+
+### Definição de "parcela futura" para o cálculo de "Total em Parcelamentos Futuros"
+**Origem:** `analise-requisitos.md`, Seção 9 — "Entidade própria para
+definição do parcelamento e 'Total em Parcelamentos Futuros' (pós-MVP)"
+
+O documento marca explicitamente: "decisão ainda aberta, a resolver quando
+esta entidade for desenhada: o que conta como 'parcela futura' — parcela
+com data de vencimento ainda não alcançada, ou parcela cujo Item ainda
+está com estado `pendente`?". Não é decisão de apresentação em tela, é
+regra de negócio sobre qual critério o cálculo derivado deve usar — por
+isso não entra na lista principal, mas fica registrado aqui para não se
+perder.
