@@ -26,6 +26,60 @@ A definir/revisar quando a identidade visual do app for desenhada.
   seção de Gastos e seção de Investimentos
 - Configurações fixadas na parte inferior do menu
 
+## Estrutura do card de mês no carrossel: períodos expostos diretamente
+
+Ideia surgida ao discutir a visão consolidada do mês (ver
+`analise-requisitos.md`, seção 4, extensões pós-MVP da tela consolidada de
+movimentações — "Ver todas as movimentações de um Mês"). Em vez de o
+carrossel de meses (seção 1) levar a uma tela intermediária de seleção de
+Período, o próprio card do mês no carrossel já exibiria os Períodos como
+sub-áreas clicáveis dentro dele, eliminando um clique/tela da navegação:
+
+```
+Junho                    | Julho                    | Agosto
+(Salário                 | (Salário                 | ...
+ dd/mm/yyyy - dd/mm/yyyy) | dd/mm/yyyy - dd/mm/yyyy) |
+(Adiantamento             | (Adiantamento             |
+ dd/mm/yyyy - dd/mm/yyyy)  | dd/mm/yyyy - dd/mm/yyyy)  |
+```
+
+Cada bloco "Nome do período + intervalo de datas" é uma div clicável
+própria, que leva direto ao Período correspondente — não existe uma tela
+separada de "escolha o período" a ser pulada ou não; o próprio card já é
+o seletor.
+
+Quando o mês tem um único Período (modo mensal, seção 1 do
+`analise-requisitos.md`), a div ocupa o espaço inteiro que as duas divs
+ocupariam num mês quinzenal, sem alterar o comportamento de clique (ainda
+leva direto ao Período):
+
+```
+Junho          |
+(Salário       |
+ dd/mm/yyyy -  |
+ dd/mm/yyyy)   |
+```
+
+### Onde encaixar o acesso ao quadro de resumo consolidado do mês
+
+Ponto em aberto, duas ideias levantadas, nenhuma escolhida:
+
+- **Div própria dentro do card**, sempre visível (ex: "Quadro de Resumo do
+  Mês" como uma terceira área clicável, abaixo das divs de período) — mais
+  descobrível, mas deixa o card permanentemente mais alto/denso, mesmo em
+  meses com um único Período (onde o quadro do mês seria idêntico ao do
+  próprio Período — redundante nesse caso específico)
+- **Menu de contexto (3 pontos) no canto do card** — mantém o card mais
+  limpo, mas hoje só teria uma opção conhecida ("ver quadro do mês"); sem
+  uma segunda ação real identificada, abrir um menu para uma única opção
+  adiciona um clique em vez de economizar (não há hoje, por exemplo,
+  nenhuma feature de "editar o mês" documentada em
+  `analise-requisitos.md` que justificasse um menu com múltiplas opções)
+
+Sem decisão fechada — a inclinação atual é para um elemento direto (não
+menu), dado que não há ainda uma segunda ação que justifique a etapa
+extra de abrir um menu.
+
 ## Personalização visual de carteiras
 
 - Permitir foto/imagem customizada por carteira
