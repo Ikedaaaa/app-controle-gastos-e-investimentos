@@ -648,6 +648,17 @@ variação do mesmo mecanismo, é uma regra de destino diferente.
   conceitos diferentes: a fatura do período pode incluir parcelas de compras
   de meses anteriores, enquanto o "Total no Crédito" reflete só o volume de
   compras parceladas/no crédito originadas neste período específico
+
+  **Total no Crédito não soma no Total Geral do período.** Diferente de
+  Gasto, Acúmulo, Investimento e Fatura — categorias que sempre debitam o
+  saldo disponível no momento em que o item é registrado/realizado — uma
+  compra no crédito não afeta o saldo até a fatura ser paga (quando já
+  entra como categoria Fatura). Somar Total no Crédito ao Total Geral
+  duplicaria a contagem do mesmo dinheiro: uma vez no mês da compra
+  (Crédito) e outra no(s) mês(es) da parcela (Fatura). Por isso, Total no
+  Crédito é exibido como dado informativo/paralelo, fora da soma do Total
+  Geral — a decisão de como separá-lo visualmente (ex: destacado da tabela
+  principal) é decisão de design de UI, não desta seção
 - Cada total acima **separado entre "Meu" e "Terceiro"**, além do total
   combinado — reflete o padrão observado nas anotações onde o usuário
   separava "Gasto Meu" de "Gasto Outros" para saber sua exposição real
@@ -682,20 +693,34 @@ implementação, não linguagem natural do domínio. As duas telas descritas
 abaixo (drill-down simples e tela consolidada) exibem a mesma entidade,
 só sob nomes de UI diferentes do termo técnico.
 
-### Tela consolidada de movimentações (MVP: drill-down simples; demais pontos de acesso e filtros, pós-MVP)
+### Tela consolidada de movimentações (MVP: drill-down por Fluxo, Período e Mês; demais pontos de acesso e filtros, pós-MVP)
 
 O drill-down descrito acima (tocar num total do resumo) navega hoje para
 "a lista filtrada" — essa lista é, na prática, uma tela própria e
 reaproveitável de **listagem de movimentações**, não uma tela nova para
-cada total. O MVP cobre apenas o acesso mais simples a essa tela: tocar em
-um total do quadro de resumo abre a lista já filtrada por aquele total,
-sem nenhum controle de filtro adicional visível ao usuário — não é
-possível, no MVP, trocar de filtro dentro da tela ou combinar critérios.
+cada total. Ainda no MVP, sem nenhum controle de filtro adicional visível
+ao usuário (não é possível, no MVP, trocar de filtro dentro da tela ou
+combinar critérios), o drill-down cobre três escopos, cada um só mudando o
+alcance do `WHERE` da mesma consulta — nenhum deles exige o painel de
+filtro combinável (esse sim pós-MVP, ver abaixo):
 
-Internamente, mesmo no MVP, a consulta que popula essa tela filtra pelo
-vínculo estrutural do Fluxo (não uma FK direta de Item para Período — a
-hierarquia real é Período → Fluxo → Item, seção 2). O drill-down de um
-total do resumo é sempre escopado ao Fluxo em exibição no momento.
+- **A partir do resumo de um Fluxo específico** (quando exibido) — tocar
+  num total filtra pelo vínculo estrutural do Fluxo em exibição (não uma
+  FK direta de Item para Período — a hierarquia real é Período → Fluxo →
+  Item, seção 2): `WHERE fluxo_id = X`
+- **A partir do painel de resumo de um Período** — tocar num total filtra
+  por todos os Fluxos daquele Período, não só um Fluxo isolado (consulta
+  levemente mais ampla, mas ainda uma única consulta direta, sem filtro
+  dinâmico): `WHERE fluxo_id IN (SELECT id FROM Fluxo WHERE periodo_id = X)`
+- **A partir do painel consolidado de um Mês** ("Painel analítico
+  consolidado do Mês", abaixo) — tocar num total filtra por todos os
+  Fluxos de todos os Períodos daquele Mês: `WHERE fluxo_id IN (SELECT id
+  FROM Fluxo WHERE periodo_id IN (SELECT id FROM Periodo WHERE mes_id = Y))`
+
+Os três escopos são variações do mesmo mecanismo (filtrar pelo vínculo
+estrutural via Fluxo), sem exigir nenhuma UI de filtro nova — só o ponto
+de entrada (de qual painel o usuário tocou o total) determina o alcance
+da consulta.
 
 **Extensões pós-MVP, registradas para não se perder (nenhuma decidida como
 prioridade, apenas direção):**
@@ -703,14 +728,10 @@ prioridade, apenas direção):**
 - **Mais pontos de acesso à mesma tela**, sem multiplicar telas — cada
   ponto de entrada só muda o filtro inicial aplicado:
   - Ver todas as movimentações de um Fluxo específico, sem passar pelo
-    drill-down de um total (acesso direto, ainda escopado a um Fluxo)
-  - Ver todas as movimentações de um Período, atravessando todos os
-    Fluxos daquele Período (não só o Fluxo em exibição)
-  - Ver todas as movimentações de um Mês, atravessando todos os Períodos
-    e Fluxos do mês — esta é a materialização concreta do requisito já
-    existente "deve ser possível visualizar o mês consolidado,
-    independente do modo" (seção 1), que até então não tinha um mecanismo
-    de exibição definido
+    drill-down de um total (acesso direto, ainda escopado a um Fluxo) —
+    diferente dos três escopos acima (MVP), que sempre partem de um toque
+    num total do resumo; aqui seria um atalho de navegação direta, sem
+    passar pelo resumo
   - Acesso fora de qualquer Período específico (ex: a partir da tela
     inicial do app), com filtro padrão de intervalo de data corrida —
     início do mês atual até hoje (ex: se hoje é 05/09, carrega de 01/09 a
@@ -763,6 +784,56 @@ passa a ser remover a data (raro) em vez de adicionar (frequente, hoje
 evitado por preguiça). Isso torna o Cenário 1 do filtro por data (acima)
 viável na prática, sem exigir do usuário digitação manual de data para
 cada movimentação.
+
+### Painel analítico consolidado do Mês (MVP)
+Assim como a tela consolidada de movimentações pode atravessar todos os
+Períodos de um Mês (ver "Mais pontos de acesso à mesma tela", acima — essa
+sim pós-MVP), o próprio **painel analítico** (Quadro de Resumo, início
+desta seção) deve ter uma versão consolidada por Mês — não só a lista
+detalhada de movimentações. É a materialização, no nível de resumo
+agregado, do mesmo requisito da seção 1 ("deve ser possível visualizar o
+mês consolidado, independente do modo").
+
+**Incluído no MVP, diferente da lista consolidada de movimentações (que
+permanece pós-MVP):** o painel do Mês reaproveita o mesmo componente do
+painel por Período, já obrigatório no MVP (ver "Escopo do MVP" ao final
+do documento) — é agregação sobre totais que já serão calculados por
+Período, sem exigir nova tela de captura de dado, nova entidade ou nova
+regra de cálculo. O esforço adicional é proporcional (soma de totais já
+existentes), diferente da lista consolidada de movimentações, que exige
+filtro combinável e múltiplos pontos de acesso — por isso os dois têm
+status de MVP diferentes mesmo cobrindo a mesma ideia de "ver o mês
+inteiro".
+
+**Cálculo:** cada célula do painel consolidado do Mês é a soma direta da
+célula correspondente de cada Período que compõe o Mês (Planejado inicial,
+Realizado e Previsto, por categoria) — sem risco de dupla contagem, porque
+os Períodos de um mesmo Mês são, por definição, intervalos de data
+disjuntos (seção 1). Não é um dado novo a ser armazenado; é uma agregação
+sobre os totais já calculados por Período.
+
+**Drill-down incluído no MVP.** O painel consolidado do Mês tem o mesmo
+comportamento de drill-down do painel por Período (ver "Tela consolidada
+de movimentações", acima): tocar num total navega para a lista de
+movimentações filtrada por todos os Fluxos de todos os Períodos do Mês —
+`WHERE fluxo_id IN (SELECT id FROM Fluxo WHERE periodo_id IN (SELECT id
+FROM Periodo WHERE mes_id = Y))`. É a mesma consulta direta usada pelo
+drill-down do Período, só com o alcance do `WHERE` ampliado para o Mês —
+não exige o painel de filtro combinável (esse sim pós-MVP) nem nenhuma
+UI de filtro nova.
+
+- Quando o Mês tem dois Períodos (modo quinzenal), o painel consolidado
+  soma os totais de ambos
+- Quando o Mês tem um único Período (modo mensal), o painel consolidado é
+  matematicamente idêntico ao painel do próprio Período — não há
+  agregação real a fazer, mas o requisito de "existir uma visão
+  consolidada do mês" continua satisfeito (mesmo que, nesse caso
+  específico, ela não traga informação adicional em relação ao Período)
+- **Total no Crédito do Mês** segue a mesma regra já estabelecida por
+  Período (ver acima): é a soma do Total no Crédito de cada Período do
+  Mês, mas continua **não somando ao Total Geral do Mês**, pelo mesmo
+  motivo (evitar dupla contagem entre o mês da compra e o(s) mês(es) da
+  parcela na fatura)
 
 ### Terceira visão: navegação por calendário (opcional, baixa prioridade)
 Cada item do fluxo já tem uma data (seção 3), o que permitiria uma terceira
@@ -1969,7 +2040,9 @@ bloco de notas. Com base nas notas reais, o mínimo necessário é:
 - Estado por item (pendente/realizado) com checkbox
 - Campo de nota por item (texto livre)
 - Estado "ignorado" por item (não entra no cálculo)
-- Painel analítico automático do período (totais por categoria)
+- Painel analítico automático do período (totais por categoria), incluindo
+  a versão consolidada por Mês (soma dos totais dos Períodos que o
+  compõem — seção 4, "Painel analítico consolidado do Mês")
 - Categorias básicas de item (gasto, investimento, acúmulo, fatura, transferência)
 - Gastos recorrentes como sugestão automática no novo período
 - Controle de saldo das contas secundárias
