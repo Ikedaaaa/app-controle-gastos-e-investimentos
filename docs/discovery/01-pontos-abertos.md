@@ -13,18 +13,27 @@ Esta lista é o insumo de entrada para os prompts `04-problema-e-hmw.md`,
 
 ## Originados em `docs/analise-requisitos.md`
 
-### 1. Ordem de exibição dos três valores no quadro de resumo do período
-**Origem:** Seção 4 — "Snapshot de 'Previsto Inicial'"
+### 1. Layout do quadro de resumo por categoria e posição da linha de Total no Crédito
+**Origem:** Seção 4 — "Snapshot de 'Previsto Inicial'" e "Total no Crédito
+não soma no Total Geral do período"
 
 **Resumo neutro (para prompts que geram alternativa de UI, ex: `06`):** o
-quadro de resumo do período precisa exibir três valores — Planejado
-inicialmente, Realizado e Previsto (vivo). A ordem/disposição entre eles
-está em aberto.
+quadro de resumo do período precisa exibir, para cada categoria (Gasto,
+Acúmulo, Investimento, Fatura), três valores — Planejado inicialmente,
+Realizado e Previsto (vivo) — além de uma linha de Total Geral somando as
+quatro categorias. O Total no Crédito também precisa aparecer no quadro,
+mas não soma no Total Geral (é dado informativo, à parte). Nem a ordem dos
+três valores dentro de cada linha, nem a disposição geral da tabela, nem a
+posição/destaque visual da linha de Crédito estão decididos.
 
 **Contexto completo:** o quadro de resumo pode exibir `Planejado
-inicialmente (snapshot) | Realizado | Previsto (vivo, atual)`. O documento
-sugere uma ordem (Realizado antes de Previsto) mas deixa explícito:
-"ajustável livremente no design de UI conforme preferência de leitura".
+inicialmente (snapshot) | Realizado | Previsto (vivo, atual)` por
+categoria. O documento sugere uma ordem (Realizado antes de Previsto) mas
+deixa explícito: "ajustável livremente no design de UI conforme
+preferência de leitura". Sobre o Total no Crédito, o documento não fixa
+nenhuma disposição, só cita como exemplo "destacado da tabela principal"
+ao afirmar que a forma de separá-lo visualmente "é decisão de design de
+UI, não desta seção".
 
 ### 2. Forma de apresentação do breakdown de totais do período
 **Origem:** Seção 4 — quadro de resumo (Total no Crédito, separação
@@ -97,6 +106,24 @@ como o filtro por data deveria funcionar (filtrar pela data individual da
 movimentação vs. filtrar pelos Períodos cujo intervalo cruza a data
 escolhida) — a preferência pelo primeiro cenário está registrada, mas
 condicionada a mudanças de UX ainda não desenhadas.
+
+### 14. Layout do painel analítico consolidado do Mês
+**Origem:** Seção 4 — "Painel analítico consolidado do Mês (MVP)"
+
+**Resumo neutro (para prompts que geram alternativa de UI, ex: `06`):**
+quando um Mês tem dois Períodos (modo quinzenal), o app precisa apresentar
+um painel consolidado somando os totais de ambos, além dos painéis
+individuais de cada Período. Não está decidido como esse painel se
+organiza visualmente em relação aos dois painéis de Período (lado a lado,
+um abaixo do outro, tela própria) nem como a soma consolidada e a linha de
+Total no Crédito do mês (que, como no Período, não soma no Total Geral)
+são destacadas dentro dele.
+
+**Contexto completo:** o requisito só define o cálculo (soma direta das
+células correspondentes de cada Período) e que o painel tem drill-down
+para a lista de movimentações do mês inteiro — a apresentação (layout,
+onde acessar esse painel a partir da navegação por Mês/Período) é
+explicitamente deixada para o design de UI.
 
 ---
 

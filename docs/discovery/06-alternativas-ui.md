@@ -4,10 +4,11 @@
 > `docs/discovery/04-problema-e-hmw.md` (perguntas HMW a responder) e
 > `docs/discovery/02-panorama-solucoes-existentes.md` (referências de
 > mercado). Para os pontos que têm divisão "Resumo neutro" / "Contexto
-> completo" no documento de origem (pontos 1, 6, 7, 9, 10 e 12), as alternativas
-> abaixo foram desenhadas a partir apenas do resumo neutro — nenhuma delas
-> reaproveita as sugestões específicas que estavam registradas na parte de
-> contexto completo (hex de cor, ordem sugerida, ideias já citadas etc.).
+> completo" no documento de origem (pontos 1, 6, 7, 9, 10, 12 e 14), as
+> alternativas abaixo foram desenhadas a partir apenas do resumo neutro —
+> nenhuma delas reaproveita as sugestões específicas que estavam
+> registradas na parte de contexto completo (hex de cor, ordem sugerida,
+> ideias já citadas etc.).
 >
 > Cada ponto traz 2-3 alternativas concretas, usando as lentes: referência
 > externa (adaptação de um padrão já validado no panorama), minimalismo
@@ -16,53 +17,65 @@
 
 ---
 
-## 1. Ordem de exibição dos três valores no quadro de resumo do período
+## 1. Layout do quadro de resumo por categoria e posição da linha de Total no Crédito
 
-**Problema (resumo neutro):** o quadro de resumo do período precisa exibir
-Planejado inicialmente, Realizado e Previsto (vivo). A ordem está em aberto.
+**Problema (resumo neutro):** o quadro de resumo do período precisa exibir,
+por categoria (Gasto, Acúmulo, Investimento, Fatura), os três valores
+Planejado inicialmente, Realizado e Previsto (vivo), além de uma linha de
+Total Geral somando as quatro. O Total no Crédito também aparece no
+quadro, mas não soma no Total Geral. Nem a ordem dos três valores por
+linha, nem a disposição da tabela, nem o destaque da linha de Crédito
+estão decididos.
 
-### Alternativa A — Destaque no valor de ação imediata (referência externa)
-Inspirada na separação "Home vs. Reflect" da YNAB: o valor **Previsto
-(vivo)** ganha destaque — fonte maior, no topo do quadro, cor reativa
-(verde/vermelho conforme sinal). Planejado inicial e Realizado aparecem
-abaixo, lado a lado, em fonte menor e cor neutra, como dados de apoio. A
-lógica: o número que muda em tempo real é o que importa pra decisão do dia
-a dia; os outros dois são referência histórica.
+### Alternativa A — Tabela com colunas fixas e linha de Crédito destacada por divisória (referência externa)
+Padrão de extrato/relatório financeiro (tabela com cabeçalho de coluna fixo
+"Planejado | Realizado | Previsto", uma linha por categoria, linha de
+Total Geral em negrito ao final). O Total no Crédito aparece como uma
+linha adicional, abaixo de uma divisória horizontal e com rótulo
+"(informativo)" — mesma estrutura de colunas das demais linhas, mas
+visualmente separada por espaço/traço para reforçar que não participa da
+soma do Total Geral acima dela.
 
-### Alternativa B — Um número por padrão, três sob demanda (minimalismo extremo)
-Na tela do período, só aparece **um** valor grande (o Previsto vivo). Um
-toque nele (ou um botão "detalhar") expande uma segunda linha revelando os
-outros dois, Planejado e Realizado. A tela nunca mostra os três de uma vez
-sem pedir — reduz a carga de leitura no caso comum (só quero saber quanto
-tenho agora), sem eliminar o detalhe pra quando for preciso comparar.
+### Alternativa B — Só o Total Geral por padrão, categorias sob demanda (minimalismo extremo)
+Na tela do período, só aparece uma linha: o Total Geral, com os três
+valores (Planejado | Realizado | Previsto). Tocar nela expande a tabela
+completa, revelando as quatro categorias e, por último, o Crédito
+informativo. A tela nunca mostra o detalhamento por categoria sem pedir —
+reduz a carga de leitura no caso comum (só quero saber o total), sem
+eliminar o detalhe para quando for preciso comparar categoria por
+categoria.
 
-### Alternativa C — Sequência causal com setas (persona)
-Ordem fixa Planejado → Realizado → Previsto, com uma seta fina entre cada
-par e um valor de diferença (delta) sobre a seta (ex: "Planejado R$2.000 →
-+R$180 → Realizado R$2.180 → -R$95 → Previsto R$2.085"). Isso responde
-diretamente ao HMW de "não exigir comparação manual": o delta já vem
-calculado. Encaixa com o jeito do usuário de pensar em cascata (a mesma
-lógica da subtração item a item do bloco de notas) e com a preferência dele
-por entender a origem de cada número, não só o resultado final.
+### Alternativa C — Tabela sempre visível, Crédito como bloco separado fora da tabela (persona)
+Mesma tabela por categoria da Alternativa A (sempre visível, sem exigir
+toque para expandir — o usuário valoriza informação sempre visível e não
+escondida atrás de interações que pode esquecer, mesmo padrão já adotado
+no ponto 2 deste documento), mas o Total no Crédito não fica dentro da
+mesma tabela: aparece como um bloco próprio abaixo, com espaçamento
+visual claro (não uma linha a mais na mesma grade de colunas), reforçando
+que é uma dimensão diferente (o que ainda não afetou o saldo) e não um
+item a somar com os demais.
 
 ### Avaliação
 
 | Alternativa | Clareza de uso | Esforço de implementação |
 |---|---|---|
-| A — Destaque no Previsto | 4 | 5 |
-| B — Um número, três sob demanda | 3 | 4 |
-| C — Sequência causal com setas | 3 | 2 |
+| A — Tabela fixa, Crédito com divisória | 4 | 4 |
+| B — Só Total Geral, categorias sob demanda | 3 | 4 |
+| C — Tabela fixa, Crédito como bloco separado | 5 | 4 |
 
 ### Recomendação
 
-**Alternativa A.** É a que empata melhor as duas dimensões: um número grande
-em destaque com dois números de apoio menores é um padrão já familiar (não
-exige aprendizado) e é só composição de `Text` com estilos diferentes, sem
-lógica de estado ou desenho customizado. A Alternativa C tem o maior
-potencial de "match" com o raciocínio em cascata do usuário, mas o esforço
-de desenhar setas e deltas customizados não se paga frente ao ganho — o
-mesmo raciocínio de cascata já é atendido, de forma mais simples, pela
-Alternativa 1 do ponto 2 (breakdown com Meu/Terceiro/Crédito).
+**Alternativa C.** Mantém a tabela por categoria sempre visível (sem
+exigir toque para expandir, como a Alternativa B faria), o que bate com a
+preferência já registrada do usuário por não esconder dado atrás de
+interação opcional. A separação física do Crédito em um bloco à parte
+(em vez de só uma divisória dentro da mesma tabela, como em A) comunica
+com mais clareza que ele não é "mais uma linha somável" — reduz o risco
+de leitura apressada somar o Crédito ao Total Geral por engano, que é
+exatamente o erro que a regra de negócio (seção 4 do
+`analise-requisitos.md`) existe para evitar. O esforço de implementação é
+equivalente ao da Alternativa A (mesma tabela, só um `Column`/espaçamento
+adicional para o bloco de Crédito), sem custo extra relevante.
 
 ---
 
@@ -674,3 +687,64 @@ individual da movimentação vs. intervalo do Período) não influencia esta
 recomendação — nenhuma das três alternativas depende de resolver essa
 decisão para funcionar; fica como pendência de modelagem separada, já
 registrada em `01-pontos-abertos.md`.
+
+---
+
+## 14. Layout do painel analítico consolidado do Mês
+
+**Problema (resumo neutro):** quando um Mês tem dois Períodos (modo
+quinzenal), o app precisa apresentar um painel consolidado somando os
+totais de ambos, além dos painéis individuais de cada Período. Não está
+decidido como esse painel se organiza visualmente em relação aos dois
+painéis de Período, nem como a soma consolidada e a linha de Total no
+Crédito do mês são destacadas dentro dele.
+
+### Alternativa A — Tela própria com os dois painéis de Período empilhados e o total ao final (referência externa)
+Padrão comum em apps que consolidam sub-períodos (ex: fatura anual somando
+faturas mensais): uma tela dedicada ao Mês mostra o painel do Período 1
+(mesmo componente já usado na tela do Período), depois o painel do
+Período 2, e por último uma linha/bloco de "Total do Mês" com os mesmos
+três valores (Planejado | Realizado | Previsto) somados. O bloco de
+Crédito do mês (Período 1 + Período 2 + Total) aparece separado, abaixo
+dos painéis, mesma lógica de separação já adotada no ponto 1 deste
+documento.
+
+### Alternativa B — Só o total consolidado, sem repetir os painéis de cada Período (minimalismo extremo)
+A tela do Mês mostra direto o painel consolidado (Planejado | Realizado |
+Previsto por categoria, já somado), sem reexibir os dois painéis
+individuais de Período — quem quiser o detalhe de um Período específico
+navega até ele separadamente (a partir do card do mês no carrossel, ver
+`sugestoes-ui-navegacao.md`). Menos rolagem, menos redundância visual
+entre a tela do Mês e a tela de cada Período.
+
+### Alternativa C — Painéis de Período + total, reaproveitando o mesmo componente de tabela do ponto 1 (persona)
+Mesma estrutura da Alternativa A (painéis de cada Período empilhados +
+total ao final), mas com uma condição adicional: o componente de tabela é
+literalmente o mesmo já usado no painel de Período (ponto 1) — sem nenhuma
+variação visual entre "tabela de Período" e "tabela dentro da tela do
+Mês". Coerente com a preferência já observada do usuário por
+previsibilidade e por não introduzir um padrão visual novo para uma
+informação que já segue uma lógica conhecida (a mesma tabela, só repetida
+três vezes: Período 1, Período 2, Total).
+
+### Avaliação
+
+| Alternativa | Clareza de uso | Esforço de implementação |
+|---|---|---|
+| A — Painéis empilhados + total | 4 | 4 |
+| B — Só o total consolidado | 3 | 5 |
+| C — Painéis empilhados, componente reaproveitado | 5 | 5 |
+
+### Recomendação
+
+**Alternativa C.** Reaproveitar o mesmo componente de tabela do ponto 1
+(Planejado | Realizado | Previsto por categoria, com o bloco de Crédito
+separado) elimina a necessidade de desenhar um componente novo — a tela
+do Mês só empilha três instâncias do componente já existente (Período 1,
+Período 2, Total), sem lógica de apresentação diferente. A Alternativa B
+economiza rolagem, mas esconde o detalhe de cada Período — que o usuário
+provavelmente vai querer conferir junto do total, dado que valoriza ver a
+composição por trás de qualquer número agregado (mesmo padrão de
+raciocínio observado no ponto 4, sobre não esconder dados brutos atrás de
+uma métrica combinada). Como cada Mês tem no máximo dois Períodos, o
+custo de rolagem adicional da Alternativa C é baixo.

@@ -17,19 +17,23 @@ deste documento, que trata apenas dos pontos abertos listados em
 
 ## HMWs por ponto aberto
 
-### 1. Ordem de exibição dos três valores no quadro de resumo do período
-*(Origem: `analise-requisitos.md`, Seção 4 — Planejado inicial / Realizado / Previsto)*
+### 1. Layout do quadro de resumo por categoria e posição da linha de Total no Crédito
+*(Origem: `analise-requisitos.md`, Seção 4 — Planejado inicial / Realizado / Previsto por categoria; Total no Crédito)*
 
 - Como poderíamos ajudar o usuário a distinguir rapidamente o valor
-  planejado inicialmente do valor previsto atual, mesmo quando os dois
-  números estão próximos?
+  planejado inicialmente do valor previsto atual de uma categoria, mesmo
+  quando os dois números estão próximos?
 - Como poderíamos mostrar a evolução entre o que foi planejado e o que foi
-  realizado sem exigir que o usuário compare os três números manualmente?
-- Como poderíamos ajudar o usuário a identificar de imediato qual dos três
-  valores é o mais relevante no momento em que ele olha para o quadro?
-- Como poderíamos apresentar os três valores de forma que a leitura sirva
-  tanto para quem quer uma visão geral rápida quanto para quem quer
-  comparar em detalhe?
+  realizado, para várias categorias ao mesmo tempo, sem exigir que o
+  usuário compare os números linha a linha?
+- Como poderíamos ajudar o usuário a identificar de imediato qual valor é
+  o mais relevante em cada categoria, sem perder a visão do total geral?
+- Como poderíamos apresentar os valores de forma que a leitura sirva tanto
+  para quem quer uma visão geral rápida (o Total Geral) quanto para quem
+  quer comparar categoria por categoria?
+- Como poderíamos destacar que o Total no Crédito é informativo e não
+  soma no Total Geral, sem que o usuário confunda os dois ao ler o quadro
+  rapidamente?
 
 ### 2. Forma de apresentação do breakdown de totais do período
 *(Origem: `analise-requisitos.md`, Seção 4 — Total no Crédito, Meu/Terceiro)*
@@ -179,6 +183,22 @@ deste documento, que trata apenas dos pontos abertos listados em
 - Como poderíamos ajudar o usuário a filtrar movimentações por data de um
   jeito que faça sentido tanto para quem pensa numa data específica quanto
   para quem pensa num Período inteiro?
+
+### 14. Layout do painel analítico consolidado do Mês
+*(Origem: `analise-requisitos.md`, Seção 4 — `docs/discovery/01-pontos-abertos.md` ponto 14)*
+
+- Como poderíamos ajudar o usuário a entender que o painel do Mês é a soma
+  dos dois Períodos, sem confundi-lo com um terceiro painel desconectado
+  dos outros dois?
+- Como poderíamos permitir que o usuário compare o painel de cada Período
+  com o painel consolidado do Mês sem precisar navegar repetidamente entre
+  telas diferentes?
+- Como poderíamos destacar a linha de Total no Crédito do mês como
+  informativa, consistente com o mesmo tratamento já dado a ela em cada
+  Período?
+- Como poderíamos ajudar o usuário a chegar no painel consolidado do Mês a
+  partir da navegação por Mês/Período sem adicionar uma etapa de escolha
+  que ele precise lembrar de usar?
 
 ---
 
