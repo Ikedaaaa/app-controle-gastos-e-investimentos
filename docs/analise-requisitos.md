@@ -977,7 +977,7 @@ MVP o usuário informa o valor manualmente. O cálculo automático fica para
 uma versão posterior, após estudo e validação da metodologia exata.
 
 **Descobertas preliminares (pesquisa rápida, não validada — ver
-`prompts/09-pesquisa-calculo-rendimento.md` para a pesquisa aprofundada
+`prompts/10-pesquisa-calculo-rendimento.md` para a pesquisa aprofundada
 antes de implementar):**
 - O mercado financeiro brasileiro usa **base 252 dias úteis por ano** para
   anualizar taxas como CDI/DI e SELIC — convenção de mercado consolidada,
@@ -1135,7 +1135,7 @@ que a compra no dia do fechamento entra na fatura atual, outra sugerindo
 que entra já na próxima (com a complicação adicional de que isso pode
 depender do horário em que o banco processa o fechamento naquele dia).
 Nenhuma das duas foi validada com rigor suficiente para fechar a regra —
-ver `prompts/10-pesquisa-atribuicao-fatura.md` para a pesquisa aprofundada
+ver `prompts/11-pesquisa-atribuicao-fatura.md` para a pesquisa aprofundada
 pendente antes de fixar esse detalhe do algoritmo. Até essa pesquisa ser
 feita e revisada, o comportamento exato no dia do fechamento permanece em
 aberto; o restante do algoritmo (antes e depois do dia de fechamento) não

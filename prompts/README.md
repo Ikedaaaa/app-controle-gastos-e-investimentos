@@ -9,7 +9,7 @@ diferente: já existe um documento de requisitos consolidado
 para **refinar decisões que ainda estão abertas** (principalmente de UI/UX) e
 para produzir, ao final, um protótipo navegável.
 
-Por isso a sequência tem 8 passos em vez de 15, e algumas etapas do original
+Por isso a sequência tem 9 passos em vez de 15, e algumas etapas do original
 (analytics de clientes, pesquisa de mercado competitiva completa) foram
 removidas ou reduzidas por não se aplicarem a um app de uso pessoal sem
 usuários, dados de suporte ou concorrência real a vencer.
@@ -24,8 +24,11 @@ usuários, dados de suporte ou concorrência real a vencer.
 6. `06-ideacao-e-priorizacao.md` — geração e priorização de soluções para as decisões abertas
 7. `07-persona-roleplay.md` — teste de estresse das decisões escolhidas contra a persona
 8. `08-construir-prototipo.md` — construção do protótipo navegável (duas versões, comparadas)
+9. `09-consolidar-especificacao-mvp.md` — etapa final: destila as decisões de `analise-requisitos.md` e do protótipo num documento de implementação, antes de iniciar o desenvolvimento
 
-Execute em ordem — cada prompt lê a saída do anterior.
+Execute em ordem — cada prompt lê a saída do anterior. Os prompts `10` e
+`11` (pesquisas técnicas pontuais) não fazem parte desta sequência — ver
+"Pesquisas técnicas standalone" no checklist abaixo.
 
 ## Mapa de dependências entre artefatos
 
@@ -52,10 +55,13 @@ Fundação (já existia antes de qualquer prompt):
                                                               │
                                                               ▼
                                               08 → prototype/ (spec + código)
+                                                              │
+                                                              ▼
+                                    09 → docs/especificacao-mvp.md
 
 05 → docs/discovery/05-oportunidades-ia.md — isolado, não entra nessa cadeia
-09 → docs/discovery/09-pesquisa-calculo-rendimento.md — standalone, sem relação com os demais
-10 → docs/discovery/10-pesquisa-atribuicao-fatura.md — standalone, sem relação com os demais
+10 → docs/discovery/10-pesquisa-calculo-rendimento.md — standalone, sem relação com os demais
+11 → docs/discovery/11-pesquisa-atribuicao-fatura.md — standalone, sem relação com os demais
 ```
 
 Pontos-chave:
@@ -66,15 +72,22 @@ Pontos-chave:
   sendo o ponto onde as bases paralelas se encontram.
 - **05 nunca entra na cadeia principal** — é uma checagem isolada, não
   insumo para nenhum outro prompt.
-- **08 é o topo da pirâmide** — depende de 06 e 07 (e da fundação
-  diretamente), fechando a sequência com o protótipo navegável.
+- **08 é o topo da pirâmide dentro do fluxo de decisão de UI** — depende de
+  06 e 07 (e da fundação diretamente), fechando a sequência com o protótipo
+  navegável.
+- **09 é a etapa final de toda a sequência** — depende de 08 (protótipo
+  concluído) e, indiretamente, de 06 e 07. Não pesquisa nada novo, só
+  destila as decisões já tomadas num documento de implementação, marcando
+  a transição para o desenvolvimento real.
+- **10 e 11 nunca entram nesta cadeia** — são pesquisas técnicas pontuais,
+  standalone, sem relação de dependência com os demais prompts.
 
 ## Checklist de execução
 
 Marque conforme for concluindo. Para o prompt `08`, marque as sub-etapas
 conforme o mapa de sessões definido dentro do próprio arquivo. Os prompts
-`09` e `10` são pesquisas técnicas standalone (ver mapa de dependências
-acima) — não seguem a ordem 1→8, por isso aparecem numa seção própria.
+`10` e `11` são pesquisas técnicas standalone (ver mapa de dependências
+acima) — não seguem a ordem 1→9, por isso aparecem numa seção própria.
 
 - [x] `01-setup.md`
 - [x] `02-panorama-solucoes-existentes.md`
@@ -96,17 +109,19 @@ acima) — não seguem a ordem 1→8, por isso aparecem numa seção própria.
   - [ ] Sessão 2 (chat novo) — design.md (Versão B)
   - [ ] Sessão 2 — tasks.md (Versão B) executadas
   - [ ] Comparação final (`prototype/COMPARACAO.md`)
+- [ ] `09-consolidar-especificacao-mvp.md`
 
-### Pesquisas técnicas standalone (fora da sequência 1→8)
+### Pesquisas técnicas standalone (fora da sequência 1→9)
 
-- [x] `09-pesquisa-calculo-rendimento.md`
-- [ ] `10-pesquisa-atribuicao-fatura.md`
+- [x] `10-pesquisa-calculo-rendimento.md`
+- [ ] `11-pesquisa-atribuicao-fatura.md`
 
 ## Onde os artefatos são salvos, e o que é versionado
 
 | Artefato | Local | Versionado? |
 |---|---|---|
 | Panorama de soluções, problema/HMW, oportunidades de IA, decisões de UI priorizadas, conclusões do role-play, protótipo final | `docs/discovery/` e `prototype/` | Sim |
+| Especificação consolidada de implementação do MVP (prompt `09`) | `docs/especificacao-mvp.md` | Sim |
 | Mensagens brutas suas (fonte da persona) | `reference-files/discovery/persona-mensagens-brutas.md` | **Não** |
 | Persona gerada | `reference-files/discovery/persona.md` | **Não** |
 | Diálogo literal do role-play | `reference-files/discovery/roleplay-dialogo.md` | **Não** |

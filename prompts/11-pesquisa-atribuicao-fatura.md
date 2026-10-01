@@ -1,7 +1,7 @@
 # Pesquisa aprofundada: como uma compra no crédito é atribuída à fatura
 
 Este prompt não faz parte da sequência principal (01 a 08) — é uma pesquisa
-técnica independente, no mesmo padrão do prompt `09` (pesquisa de cálculo
+técnica independente, no mesmo padrão do prompt `10` (pesquisa de cálculo
 de rendimento). Motivada por uma lacuna identificada no
 `docs/analise-requisitos.md` (seção 9): o documento afirma que "toda
 compra no crédito, ao ser registrada, já sabe a qual fatura pertence,
@@ -23,7 +23,7 @@ si:
 
 Nenhuma das duas foi validada com rigor — este prompt pede uma pesquisa
 mais profunda para resolver a contradição, com múltiplas fontes e nível de
-confiança por afirmação, seguindo o mesmo padrão de rigor do prompt `09`.
+confiança por afirmação, seguindo o mesmo padrão de rigor do prompt `10`.
 
 ---
 
@@ -127,7 +127,7 @@ Ao final, duas seções:
 2. **"Fontes consultadas"** — lista consolidada de todas as fontes usadas
    (título, link, a qual ponto se refere)
 
-Salve o resultado em docs/discovery/10-pesquisa-atribuicao-fatura.md.
+Salve o resultado em docs/discovery/11-pesquisa-atribuicao-fatura.md.
 ```
 
 ---
@@ -136,7 +136,7 @@ Salve o resultado em docs/discovery/10-pesquisa-atribuicao-fatura.md.
 
 O prompt para aqui — ele não deve, por conta própria, alterar o
 `docs/analise-requisitos.md`. Depois de gerado, leia
-`docs/discovery/10-pesquisa-atribuicao-fatura.md` com calma e decida:
+`docs/discovery/11-pesquisa-atribuicao-fatura.md` com calma e decida:
 
 - Se a pesquisa trouxer resposta conclusiva para o caso de borda, você
   decide como formalizar a regra de atribuição na seção 9
@@ -149,7 +149,7 @@ O prompt para aqui — ele não deve, por conta própria, alterar o
 ---
 
 **Verificação de conclusão:** você tem um documento novo
-(`docs/discovery/10-pesquisa-atribuicao-fatura.md`) com resposta
+(`docs/discovery/11-pesquisa-atribuicao-fatura.md`) com resposta
 fundamentada (ou lacuna explicitamente sinalizada) para o caso de borda do
 dia do fechamento, incluindo a dependência de horário de processamento — o
 ponto de maior incerteza identificado nesta conversa. O

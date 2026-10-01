@@ -489,4 +489,4 @@ pós-fixado, e a base de dias no prefixado) permanece sem confirmação
 técnica sólida mesmo após pesquisa aprofundada em múltiplas fontes. Essa
 decisão sobre se e como atualizar `analise-requisitos.md` é deliberada e
 cabe a você revisar separadamente, conforme já registrado em
-`prompts/09-pesquisa-calculo-rendimento.md`.
+`prompts/10-pesquisa-calculo-rendimento.md`.

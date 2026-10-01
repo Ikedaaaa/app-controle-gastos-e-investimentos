@@ -166,7 +166,7 @@ Ao final, duas seções:
    como referência única para eu conferir a origem de qualquer afirmação
    sem precisar procurar espalhado pelo documento.
 
-Salve o resultado em docs/discovery/09-pesquisa-calculo-rendimento.md.
+Salve o resultado em docs/discovery/10-pesquisa-calculo-rendimento.md.
 ```
 
 ---
@@ -175,7 +175,7 @@ Salve o resultado em docs/discovery/09-pesquisa-calculo-rendimento.md.
 
 O prompt para aqui — ele não deve, por conta própria, alterar o
 `docs/analise-requisitos.md`. Depois de gerado, leia
-`docs/discovery/09-pesquisa-calculo-rendimento.md` com calma e decida:
+`docs/discovery/10-pesquisa-calculo-rendimento.md` com calma e decida:
 
 - Se a pesquisa trouxe respostas conclusivas, você decide se e como
   atualizar a seção 7 do `docs/analise-requisitos.md`, substituindo as
@@ -191,7 +191,7 @@ etapa deliberada sua, não uma continuação automática desta pesquisa.
 ---
 
 **Verificação de conclusão:** você tem um documento novo
-(`docs/discovery/09-pesquisa-calculo-rendimento.md`) com respostas
+(`docs/discovery/10-pesquisa-calculo-rendimento.md`) com respostas
 fundamentadas (ou lacunas explicitamente sinalizadas como sem resposta) para
 os 6 pontos levantados, especialmente o tratamento de fins de semana e
 feriados — o ponto de maior incerteza da pesquisa preliminar. O
